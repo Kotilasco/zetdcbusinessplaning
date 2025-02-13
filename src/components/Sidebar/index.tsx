@@ -41,9 +41,7 @@ const menuGroups = [
         ),
         label: "Dashboard",
         route: "#",
-        children: [
-          { label: "homepage", route: "/" },
-        ],
+        children: [{ label: "homepage", route: "/" }],
       },
 
       {
@@ -113,6 +111,11 @@ const menuGroups = [
         label: "Reports",
         route: "/reports",
         children: [
+          { label: "Work Plan Module", route: "/reports/monthly/workplan" },
+          {
+            label: "Weekly Reporting Table",
+            route: "/reports/weekly/reporting",
+          },
           { label: "Weekly", route: "/reports/weekly" },
           { label: "Monthly", route: "/reports/monthly" },
           { label: "Quarterly", route: "/reports/quarterly" },
@@ -146,7 +149,7 @@ const menuGroups = [
         label: "Profile",
         route: "/profile",
       },
-    /*   {
+      /*   {
         icon: (
           <svg
             className="fill-current"
@@ -248,11 +251,9 @@ const menuGroups = [
         ),
         label: "Charts",
         route: "#",
-        children: [
-          { label: "Basic Chart", route: "/charts/basic-chart" },
-        ],
+        children: [{ label: "Basic Chart", route: "/charts/basic-chart" }],
       },
-     /*  {
+      /*  {
         icon: (
           <svg
             className="fill-current"
