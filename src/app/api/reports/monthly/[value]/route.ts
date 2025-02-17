@@ -15,7 +15,6 @@ export default async function handler(
 ) {
   const { method, query } = req;
   const { value } = query;
-console.log("LLLLL")
   try {
     switch (method) {
       case 'GET': {
@@ -23,7 +22,7 @@ console.log("LLLLL")
         // (Replace with your actual data fetching logic)
         let data: ReportData[] = [];
 
-        console.log("kkkkk")
+        
 
         switch (value) {
           case 'initial':

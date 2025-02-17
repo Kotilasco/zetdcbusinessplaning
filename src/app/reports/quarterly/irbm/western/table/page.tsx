@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { RecentSales } from "@/components/AdminDashboard/RecentSales";
+import { RecentActivities } from "@/components/AdminDashboard/RecentActivities";
 import { Trans } from "@/components/Tables/IRBM/Trans";
 import { HeaderProps } from "@/components/Tables/IRBM/Trans";
 

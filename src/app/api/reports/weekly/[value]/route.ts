@@ -12,7 +12,6 @@ import { NextResponse, NextRequest } from "next/server";
 
 export const GET = async (req: NextRequest, res: NextResponse) => {
     const { method } = req;
-    console.log("LLLLL")
     const pathSegments = req.url.split('/');
     const value = pathSegments[pathSegments.length - 1];
     console.log(value); // This will log 'quarter' based on the provided URL

@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { RecentSales } from "@/components/AdminDashboard/RecentSales";
+import { RecentSales } from "@/components/AdminDashboard/RecentActivities";
 import { Trans } from "@/components/Tables/IRBM/Trans";
 import { HeaderProps } from "@/components/Tables/IRBM/Trans";
 
@@ -29,8 +29,7 @@ const TableComponent: React.FC<TableComponentProps> = ({ year, quarter }) => {
     kraref: "PROG 2",
     outcome: "Impoved Power Supply",
     outcomeref: "OC 2.4",
-    output:
-      "ZPC arrears reduced",
+    output: "ZPC arrears reduced",
     outputref: "HMO",
   };
 

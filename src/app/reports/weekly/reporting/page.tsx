@@ -1,10 +1,12 @@
 //@ts-nocheck
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
   SheetClose,
@@ -15,8 +17,66 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { PlusIcon } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { MONTHS, WEEKS } from "@/data/constants";
+import { Delete, Pencil, PlusIcon } from "lucide-react";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
+import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const FormSchema = z.object({
+  weeklyTarget: z.number({
+    required_error: "Please input a weekly target",
+  }),
+  actualWorkDone: z.number({
+    required_error: "Please enter actual work done.",
+  }),
+  percentageComplete: z.number({
+    required_error: "Please enter completed percentage.",
+  }),
+  budgetPercentage: z.number({
+    required_error: "Please enter completed percentage.",
+  }),
+  remarks: z.string().min(2, {
+    message: "remarks should be of length greaer than 2",
+  }),
+});
 
 const SHEET_SIDES = ["right"] as const;
 
@@ -24,6 +84,10 @@ type SheetSide = (typeof SHEET_SIDES)[number];
 
 function WeeklyReport() {
   const [reports, setReports] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   const [formData, setFormData] = useState({
     activity: "",
     weeklyTarget: "",
@@ -39,6 +103,11 @@ function WeeklyReport() {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   }; */
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {},
+  });
 
   const handleChange = (e) => {
     const { name, value, type, options } = e.target;
@@ -77,161 +146,345 @@ function WeeklyReport() {
     });
   };
 
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getAllWorkPlans();
+
+        setReports(response);
+      } catch (error: any) {
+        toast({
+          title: "Error fetch",
+          description: error?.message,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted]);
+
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    startTransition(async () => {
+      console.log(data);
+      console.log("kkkk");
+      await createWorkPlan(data)
+        .then((res) => {
+          console.log(res);
+          form.reset();
+          setSubmitted((prev) => !prev);
+        })
+        .catch((err) => {
+          toast({
+            title: "Error posting",
+            description: err?.message,
+          });
+          throw new Error(err.message);
+        });
+    });
+  }
+
+  console.log(reports);
+
   return (
     <DefaultLayout>
-    <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
-      <table className="w-full border-collapse border border-gray-300">
-        <thead className="bg-black text-white">
-          <tr>
-            <th className="border p-2">Activity</th>
-            <th className="border p-2">Weekly Target</th>
-            <th className="border p-2">Actual Work Done</th>
-            <th className="border p-2">Team Members</th>
-            <th className="border p-2">Percentage Complete</th>
-            <th className="border p-2">Actual Expenditure</th>
-            <th className="border p-2">% of Budget</th>
-            <th className="border p-2">Remarks</th>
-          </tr>
-        </thead>
-        <tbody>
-          {reports.map((report, index) => (
-            <tr key={index} className="border">
-              <td className="border p-2">{report.activity}</td>
-              <td className="border p-2">{report.weeklyTarget}</td>
-              <td className="border p-2">{report.actualWorkDone}</td>
-              <td className="border p-2">{report.teamMembers.join(" - ")}</td>
-              <td className="border p-2">{report.percentageComplete}</td>
-              <td className="border p-2">{report.actualExpenditure}</td>
-              <td className="border p-2">{report.budgetPercentage}</td>
-              <td className="border p-2">{report.remarks}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="grid grid-cols-2 gap-2">
-        {SHEET_SIDES.map((side) => (
-          <Sheet key={side}>
-            <SheetTrigger asChild className="mt-5 w-24">
-              <Button variant="default" size={"sm"} className="">
-                Add <PlusIcon size={10} />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side={side} className="max-h-screen overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle>Add Weekly Activity</SheetTitle>
-                <SheetDescription>
-                  Make changes to your activities here
-                </SheetDescription>
-              </SheetHeader>
-              <form onSubmit={handleSubmit} className="mb-6 h-[50%] space-y-1 ">
-                <div>
-                  <label className="block font-medium">Activity</label>
-                  <input
-                    type="text"
-                    name="activity"
-                    value={formData.activity}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">Weekly Target</label>
-                  <input
-                    type="number"
-                    name="weeklyTarget"
-                    value={formData.weeklyTarget}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">Actual Work Done</label>
-                  <input
-                    type="number"
-                    name="actualWorkDone"
-                    value={formData.actualWorkDone}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">
-                    Team Members Involved
-                  </label>
-                  <select
-                    name="teamMembers" // Use the same name as in `formData`
-                    value={formData.teamMembers} // Bind selected values
-                    onChange={handleChange}
-                    multiple // Enable multi-select
-                    className="w-full rounded border p-2"
-                    required
-                  >
-                    {teamMembers.map((member) => (
-                      <option key={member.id} value={member.name}>
-                        {member.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-medium">
-                    Percentage Complete
-                  </label>
-                  <input
-                    type="number"
-                    name="percentageComplete"
-                    value={formData.percentageComplete}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">
-                    Actual Expenditure
-                  </label>
-                  <input
-                    type="number"
-                    name="actualExpenditure"
-                    value={formData.actualExpenditure}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">% of Budget</label>
-                  <input
-                    type="number"
-                    name="budgetPercentage"
-                    value={formData.budgetPercentage}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium">Remarks</label>
-                  <textarea
-                    name="remarks"
-                    value={formData.remarks}
-                    onChange={handleChange}
-                    className="w-full rounded border p-2"
-                  />
-                </div>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Save changes</Button>
-                  </SheetClose>
-                </SheetFooter>
-              </form>
-            </SheetContent>
-          </Sheet>
-        ))}
+      <div className="p-4">
+        <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
+        <div className="no-scrollbar overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300">
+            <thead className="bg-black text-white">
+              <tr>
+                <th className="border p-2">Activity</th>
+                <th className="border p-2">Weekly Target</th>
+                <th className="border p-2">Actual Work Done</th>
+                <th className="border p-2">Team Members</th>
+                <th className="border p-2">Percentage Complete</th>
+                <th className="border p-2">Actual Expenditure</th>
+                <th className="border p-2">% of Budget</th>
+                <th className="border p-2">Remarks</th>
+                <th className="border p-2">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading
+                ? // Display skeleton loader rows
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index} className="border">
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                    </tr>
+                  ))
+                : // Display actual data rows
+                  reports?.map((report, index) => (
+                    <tr key={index} className="border">
+                      <td className="border p-2">
+                        {report.scopes
+                          ?.map((scope) => scope.details)
+                          .join(", ")}
+                      </td>
+                      <td className="border p-2">{report.weeklyTarget}</td>
+                      <td className="border p-2">{report.actualWorkDone}</td>
+                      <td className="border p-2">
+                        {" "}
+                        {report.scopes
+                          ?.flatMap((scope) =>
+                            scope.assignedTeamMembers?.map(
+                              (member) => member.email,
+                            ),
+                          )
+                          .join(", ")}
+                      </td>
+                      <td className="border p-2">
+                        {report.percentageComplete}
+                      </td>
+                      <td className="border p-2">{report.actualExpenditure}</td>
+                      <td className="border p-2">{report.budgetPercentage}</td>
+                      <td className="border p-2">{report.remarks}</td>
+                      <td className="flex items-center justify-around space-x-1 border p-2">
+                        <div className="">
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button size={"sm"}>
+                                <p className="hidden lg:block">Edit</p>
+                                <Pencil size={10} className="text-white" />
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent side="right">
+                              <SheetHeader>
+                                <SheetTitle>Add Work Plan</SheetTitle>
+                                <SheetDescription>
+                                  Add a work plan for a particular month.
+                                </SheetDescription>
+                              </SheetHeader>
+                              <Form {...form}>
+                                <form
+                                  onSubmit={form.handleSubmit(onSubmit)}
+                                  className="mb-6 grid gap-4 py-4"
+                                >
+                                  <FormField
+                                    control={form.control}
+                                    name="weeklyTarget"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Weekly Target</FormLabel>
+                                        <Input
+                                          placeholder="Enter weekly target"
+                                          type="number"
+                                          {...field}
+                                          defaultValue={
+                                            report.weeklyTarget || ""
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <FormField
+                                    control={form.control}
+                                    name="actualWorkDone"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Actual Work Done</FormLabel>
+                                        <Input
+                                          placeholder="Enter Actual Work Done"
+                                          {...field}
+                                          defaultValue={
+                                            report.actualWorkDone || ""
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="percentageComplete"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>
+                                          Percentage completed
+                                        </FormLabel>
+                                        <Input
+                                          placeholder="Enter percentage completed"
+                                          {...field}
+                                          defaultValue={
+                                            report.percentageComplete || ""
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="budgetPercentage"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Budget Percentage</FormLabel>
+                                        <Input
+                                          placeholder="Enter budget percentage"
+                                          {...field}
+                                          defaultValue={
+                                            report.budgetPercentage || ""
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="actualExpenditure"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>
+                                          Actual Expenditure
+                                        </FormLabel>
+                                        <Input
+                                          placeholder="Enter actual expenditure"
+                                          {...field}
+                                          defaultValue={
+                                            report.actualExpenditure || ""
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="remarks"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Remarks</FormLabel>
+                                        <FormControl>
+                                          <Textarea
+                                            placeholder="Write the scope to be performed"
+                                            className="resize-none"
+                                            defaultValue={report.week || ""}
+                                            {...field}
+                                          />
+                                        </FormControl>
+
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <Button disabled={isPending} type="submit">
+                                    Submit
+                                  </Button>
+                                </form>
+                              </Form>
+
+                              <SheetFooter>
+                                <SheetClose asChild>
+                                  <Button hidden>Close</Button>
+                                </SheetClose>
+                              </SheetFooter>
+                            </SheetContent>
+                          </Sheet>
+                        </div>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button size={"sm"} className="">
+                              <p className="hidden lg:block">Delete</p>
+                              <Delete className="text-white" size={10} />
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                              <DialogTitle>Edit Record</DialogTitle>
+                              <DialogDescription>
+                                Make changes to your activity here. Click save
+                                when you're done.
+                              </DialogDescription>
+                            </DialogHeader>
+                            <Card className="w-[350px]">
+                              <CardContent>
+                                <form>
+                                  <div className="grid w-full items-center gap-4">
+                                    <div className="flex flex-col space-y-1.5">
+                                      <Label htmlFor="name">Name</Label>
+                                      <Input
+                                        id="name"
+                                        placeholder="Name of your project"
+                                      />
+                                    </div>
+                                    <div className="flex flex-col space-y-1.5">
+                                      <Label htmlFor="framework">
+                                        Framework
+                                      </Label>
+                                      <Select>
+                                        <SelectTrigger id="framework">
+                                          <SelectValue placeholder="Select" />
+                                        </SelectTrigger>
+                                        <SelectContent position="popper">
+                                          <SelectItem value="next">
+                                            Next.js
+                                          </SelectItem>
+                                          <SelectItem value="sveltekit">
+                                            SvelteKit
+                                          </SelectItem>
+                                          <SelectItem value="astro">
+                                            Astro
+                                          </SelectItem>
+                                          <SelectItem value="nuxt">
+                                            Nuxt.js
+                                          </SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                </form>
+                              </CardContent>
+                              <CardFooter className="flex justify-between">
+                                <Button variant="outline">Cancel</Button>
+                                <Button>Deploy</Button>
+                              </CardFooter>
+                            </Card>
+                            <DialogFooter>
+                              <Button type="submit">Save changes</Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
     </DefaultLayout>
   );
 }

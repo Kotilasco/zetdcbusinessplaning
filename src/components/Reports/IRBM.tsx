@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-  } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
-  import { Overview } from "@/components/AdminDashboard/Overview";
-  import { RecentSales } from "@/components/AdminDashboard/RecentSales";
+import { Overview } from "@/components/AdminDashboard/Overview";
+import { RecentSales } from "@/components/AdminDashboard/RecentActivities";
 
 interface TableComponentProps {
   value: any;
@@ -20,7 +20,7 @@ interface TableComponentProps {
 const TableComponent: React.FC<TableComponentProps> = ({ value }) => {
   // Table data
 
-  console.log(value)
+  console.log(value);
 
   const data = [
     {
@@ -82,51 +82,43 @@ const TableComponent: React.FC<TableComponentProps> = ({ value }) => {
       responsibility: "SMETO",
     },
     {
-        outputStage: "Act 5",
-        description: "Commission T&D Solar 40MW Plant",
-        startDate: "Jan 2024",
-        finishDate: "",
-        expenditure: "",
-        responsibility: "SMETO",
-      },
+      outputStage: "Act 5",
+      description: "Commission T&D Solar 40MW Plant",
+      startDate: "Jan 2024",
+      finishDate: "",
+      expenditure: "",
+      responsibility: "SMETO",
+    },
   ];
 
   return (
     <div className="p-4">
-        <div className="flex-1 space-y-4 p-8 pt-6">
-          <Tabs defaultValue="initial" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="initial">Initial</TabsTrigger>
-              <TabsTrigger value="quarter">
-                25% Complete
-              </TabsTrigger>
-              <TabsTrigger value="half" >
-                50% Complete
-              </TabsTrigger>
-              <TabsTrigger value="quarterful" >
-                75% Complete
-              </TabsTrigger>
-              <TabsTrigger value="finish" >
-                Completed
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="initial" className="space-y-4">
-             <Overview value="initial" />
-            </TabsContent>
-            <TabsContent value="quarter" className="space-y-4">
-             <Overview value="quarter" />
-            </TabsContent>
-            <TabsContent value="half" className="space-y-4">
-             <Overview value="half" />
-            </TabsContent>
-            <TabsContent value="quarterful" className="space-y-4">
-             <Overview value="quarterful" />
-            </TabsContent>
-            <TabsContent value="finish" className="space-y-4">
-             <Overview value="finish" />
-            </TabsContent>
-          </Tabs>
-        </div>
+      <div className="flex-1 space-y-4 p-8 pt-6">
+        <Tabs defaultValue="initial" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="initial">Initial</TabsTrigger>
+            <TabsTrigger value="quarter">25% Complete</TabsTrigger>
+            <TabsTrigger value="half">50% Complete</TabsTrigger>
+            <TabsTrigger value="quarterful">75% Complete</TabsTrigger>
+            <TabsTrigger value="finish">Completed</TabsTrigger>
+          </TabsList>
+          <TabsContent value="initial" className="space-y-4">
+            <Overview value="initial" />
+          </TabsContent>
+          <TabsContent value="quarter" className="space-y-4">
+            <Overview value="quarter" />
+          </TabsContent>
+          <TabsContent value="half" className="space-y-4">
+            <Overview value="half" />
+          </TabsContent>
+          <TabsContent value="quarterful" className="space-y-4">
+            <Overview value="quarterful" />
+          </TabsContent>
+          <TabsContent value="finish" className="space-y-4">
+            <Overview value="finish" />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

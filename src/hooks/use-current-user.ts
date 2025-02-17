@@ -1,16 +1,11 @@
-// import { useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export const useCurrentUser = () => {
- // const session = useSession();
- const session = {
-  data : {
-    user: {
-      role: "admin",
-      firstname: 'kuda',
-      lastname: 'koti',
-      email: 'k@k.com'
-    }
-  }
- }
+
+
+  const session = useSession();
+  console.log(session)
   return session.data?.user;
+
+   
 };

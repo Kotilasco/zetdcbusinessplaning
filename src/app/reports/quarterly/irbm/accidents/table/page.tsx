@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import { RecentSales } from "@/components/AdminDashboard/RecentSales";
+import { RecentSales } from "@/components/AdminDashboard/RecentActivities";
 import { Profit } from "@/components/Tables/IRBM/Profit";
 import { HeaderProps } from "@/components/Tables/IRBM/Profit";
 
