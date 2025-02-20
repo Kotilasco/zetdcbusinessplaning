@@ -24,14 +24,54 @@ import { currentRole } from "@/lib/auth";
 import { UserRoles } from "@/next-auth.d";
 import { Departments } from "./AdminDashboard/Departments";
 import DepartmentCreationForm from "./AdminDashboard/DepartmentCreationForm";
+import MemberCreationForm from "./auth/member-creation";
+import { hasPermission } from "@/permissions";
+import MemberCreationByManagerForm from "./auth/member-creation-by-manager";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense } from "react";
+import { Members } from "./AdminDashboard/Members";
+
+// Simulate a server-side data fetch (replace with your actual fetch logic)
+async function fetchRevenueData() {
+  // Simulate a delay
+  await new Promise((resolve) => setTimeout(resolve, 200000));
+  return { totalRevenue: "$45,231.89", growth: "+20.1111%" };
+}
 
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Customer Supplied Materials Scheme System's dashboard.",
 };
 
+function SkeletonLoader() {
+  return (
+    <div>
+      <Skeleton className="mb-2 h-8 w-32" />
+      <Skeleton className="h-4 w-24" />
+    </div>
+  );
+}
+
+async function RevenueData({
+  revenueDataPromise,
+}: {
+  revenueDataPromise: Promise<{ totalRevenue: string; growth: string }>;
+}) {
+  const revenueData = await revenueDataPromise; // Wait for the data here
+  return (
+    <div>
+      <div className="text-2xl font-bold">{revenueData.totalRevenue}</div>
+      <p className="text-xs text-muted-foreground">
+        {revenueData.growth} from last month
+      </p>
+    </div>
+  );
+}
+
 export default async function DashboardPage() {
   const role = await currentRole();
+  const revenueDataPromise = fetchRevenueData();
+
   return (
     <>
       <div className=" flex-col md:flex">
@@ -60,16 +100,22 @@ export default async function DashboardPage() {
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="reports">Reports</TabsTrigger>
-              {role === UserRoles.ROLE_ADMIN && (
-                <TabsTrigger value="create">Create User</TabsTrigger>
+              {role && hasPermission([role], "create:member") && (
+                <TabsTrigger value="create">Create Team Member</TabsTrigger>
+              )}
+              {role && hasPermission([role], "create:user") && (
+                <TabsTrigger value="user">Create User</TabsTrigger>
+              )}
+              {role && hasPermission([role], "create:teammember") && (
+                <TabsTrigger value="teammember">Team Member</TabsTrigger>
               )}
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Total Revenue
+                      Total Users
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -167,14 +213,33 @@ export default async function DashboardPage() {
                     </p>
                   </CardContent>
                 </Card>
-              </div>
+              </div> */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
                 <Card className="col-span-4">
                   <CardHeader>
-                    <CardTitle>Overview</CardTitle>
+                    <CardTitle>
+                      {role && hasPermission([role], "create:department") && (
+                        <p>Create Department</p>
+                      )}
+                      {role && hasPermission([role], "view:members") && (
+                        <p>Section Team Members</p>
+                      )}
+
+                      {role && hasPermission([role], "view:deptmembers") && (
+                        <p>Department Team Members</p>
+                      )}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2">
-                    <DepartmentCreationForm />
+                    {role && hasPermission([role], "create:department") && (
+                      <DepartmentCreationForm />
+                    )}
+                    {role && hasPermission([role], "view:members") && (
+                      <Members />
+                    )}
+                    {role && hasPermission([role], "view:deptmembers") && (
+                      <Members />
+                    )}
                   </CardContent>
                 </Card>
                 <Card className="col-span-4">
@@ -211,10 +276,10 @@ export default async function DashboardPage() {
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from last month
-                    </p>
+                    <Suspense fallback={<SkeletonLoader />}>
+                      {/* Fetch and display actual data */}
+                      <RevenueData revenueDataPromise={revenueDataPromise} />
+                    </Suspense>
                   </CardContent>
                 </Card>
                 <Card>
@@ -319,23 +384,47 @@ export default async function DashboardPage() {
                 </Card>
               </div>
             </TabsContent>
-            {role === UserRoles.ROLE_ADMIN && (
-              <TabsContent value="create" className="space-y-4">
-                <div className="grid gap-4 ">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>User Creation</CardTitle>
-                      <CardDescription>
-                        Creating account for staff user
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-2">
-                      <UserCreationForm />
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-            )}
+            <TabsContent value="create" className="space-y-4">
+              <div className="grid gap-4 ">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Member Creation</CardTitle>
+                    <CardDescription>Creating a team member</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <MemberCreationForm />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="user" className="space-y-4">
+              <div className="grid gap-4 ">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>User Creation</CardTitle>
+                    <CardDescription>
+                      Creating an account for a user
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <UserCreationForm />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            <TabsContent value="teammember" className="space-y-4">
+              <div className="grid gap-4 ">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Member Creation</CardTitle>
+                    <CardDescription>Creating your team member</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <MemberCreationByManagerForm />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
       </div>

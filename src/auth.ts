@@ -21,7 +21,7 @@ export const {
 
             const isLoggedIn = !!auth?.user;
 
-            console.log(auth)
+      //      console.log(auth)
 
             const isOnDashboard = nextUrl.pathname.startsWith('/');
             if (isOnDashboard) {
@@ -42,8 +42,8 @@ export const {
             return true;
         },
         async jwt({ token, user, account }) {
-            console.log("JWT callback - token before processing:", token);
-            console.log("JWT callback - user:", user); // Will only be available on initial sign-in
+         /*    console.log("JWT callback - token before processing:", token);
+            console.log("JWT callback - user:", user); */ // Will only be available on initial sign-in
 
             // 1. If this is the initial sign-in, add user information to the token
             if (user) {
@@ -64,18 +64,18 @@ export const {
 
             // 2. If it's not the initial sign-in, simply return the existing token
             if (Date.now() < token.accessTokenExpires) {
-                console.log("JWT callback - Token is still valid");
+               // console.log("JWT callback - Token is still valid");
                 return token;
             }
 
             // 3. If the token is expired, refresh it
-            console.log("JWT callback - Token expired, attempting to refresh");
+           // console.log("JWT callback - Token expired, attempting to refresh");
             return await refreshAccessToken(token);
         },
         async session({ token, session }) {
 
-            console.log("Session callback - token:", token);
-            console.log("Session callback - session:", session);
+         /*    console.log("Session callback - token:", token);
+            console.log("Session callback - session:", session); */
 
             if (token) {
                 session.user.email = token.email;
@@ -88,7 +88,7 @@ export const {
                 session.refresh_token = token.refresh_token;
             }
 
-            console.log(session)
+         //   console.log(session)
 
             return session;
         },
@@ -105,7 +105,7 @@ export const {
 
 async function refreshAccessToken(token) {
     try {
-        console.log("Refreshing access token...", token.refresh_token);
+       // console.log("Refreshing access token...", token.refresh_token);
 
         const response = await fetch(`${process.env.BASE_URL}/api/v1/auth/refresh-token`, {
             method: "POST",
@@ -117,7 +117,7 @@ async function refreshAccessToken(token) {
 
         const refreshedTokens = await response.json();
 
-        console.log("Refreshed tokens:", refreshedTokens);
+      //  console.log("Refreshed tokens:", refreshedTokens);
 
         if (!response.ok) throw new Error("Failed to refresh token");
 

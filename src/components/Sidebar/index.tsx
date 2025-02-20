@@ -109,12 +109,12 @@ const menuGroups = [
           </svg>
         ),
         label: "Reports",
-        route: "/reports",
+        route: "#",
         children: [
           { label: "Work Plan Module", route: "/reports/monthly/workplan" },
           {
             label: "Weekly Reporting Table",
-            route: "/reports/weekly/reporting",
+            route: "/reports/weekly",
           },
           { label: "Weekly", route: "/reports/weekly" },
           { label: "Monthly", route: "/reports/monthly" },

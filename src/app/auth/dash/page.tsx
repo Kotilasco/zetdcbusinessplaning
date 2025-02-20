@@ -13,7 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CalendarDateRangePicker } from "@/components/AdminDashboard/CalenderDateRangePicker";
 import { MainNav } from "@/components/AdminDashboard/MainNav";
 import { Overview } from "@/components/AdminDashboard/Overview";
-import { RecentSales } from "@/components/AdminDashboard/RecentActivities";
 import { Search } from "@/components/AdminDashboard/Search";
 import TeamSwitcher from "@/components/AdminDashboard/TeamSwitcher";
 import { UserNav } from "@/components/AdminDashboard/UserNav";
@@ -48,7 +47,7 @@ export default function DashboardPage() {
             <TeamSwitcher />
             <MainNav className="mx-6" />
             <div className="ml-auto flex items-center space-x-4">
-              <Search />
+              {/* <Search /> */}
               <UserNav />
             </div>
           </div>
@@ -184,7 +183,7 @@ export default function DashboardPage() {
                     <CardTitle>Overview</CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2">
-                    <Overview />
+                    
                   </CardContent>
                 </Card>
                 <Card className="col-span-3">
@@ -195,7 +194,6 @@ export default function DashboardPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RecentSales />
                   </CardContent>
                 </Card>
               </div>

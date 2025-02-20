@@ -10,7 +10,7 @@ function layout({ children }: { children: React.ReactNode }) {
         backgroundSize: "cover",
         backgroundPosition: "center",
       }}
-      className=" flex h-full min-h-screen items-center justify-center bg-red-900"
+      className=" flex h-full min-h-screen items-center justify-center"
     >
       {children}
     </div>

@@ -1,10 +1,10 @@
-///@ts-nocheck
+//@ts-nocheck
 
 "use client";
 
-import React, { useState, useTransition, useEffect } from "react";
+import React, { useEffect, useState, useTransition } from "react";
 import * as z from "zod";
-import { RegistrationSchema, UserCreationSchema } from "@/schema";
+import { MemberCreationSchema } from "@/schema";
 import { CardWrapper } from "./CardWrapper";
 import { useForm } from "react-hook-form";
 import { FormError } from "@/components/FormError";
@@ -21,12 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { createUser, register } from "@/actions/register";
@@ -40,45 +34,45 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Link from "next/link";
 import { getDepartments } from "@/actions/getDepartments";
-import DepartmentCreationForm from "../AdminDashboard/DepartmentCreationForm";
+import { createMember } from "@/actions/createMember";
 
 const roles = [
-  { label: "MANAGER", value: "MANAGER" },
-  { label: "SENIOR MANAGER", value: "SENIORMANAGER" },
-  { label: "HOD", value: "HOD" },
-  { label: "ADMIN", value: "ADMIN" },
+  { label: "department MANAGER", value: "departmentMANAGER" },
+  { label: "GENERAL MANAGER", value: "GENERALMANAGER" },
+  { label: "MANAGING DIRECTOR", value: "MANAGINGDIRECTOR" },
+  { label: "STORES PERSON", value: "STORESCLERK" },
   { label: "PROJECT ENGINEER", value: "PROJECTENGINEER" },
 ] as const;
 
-function UserCreationForm() {
+const depart = [
+  { label: "NO department", value: "NO_department" },
+  { label: "EAST", value: "EAST" },
+  { label: "NORTH", value: "NORTH" },
+  { label: "SOUTH", value: "SOUTH" },
+] as const;
+
+function MemberCreationForm() {
   const [isPending, startTransition] = useTransition();
   const [departments, setDepartments] = useState(null);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const form = useForm<z.infer<typeof UserCreationSchema>>({
-    resolver: zodResolver(UserCreationSchema),
+
+  const form = useForm<z.infer<typeof MemberCreationSchema>>({
+    resolver: zodResolver(MemberCreationSchema),
     defaultValues: {
       email: "",
       firstname: "",
       lastname: "",
-      role: "",
+      designation: "",
     },
   });
 
@@ -99,18 +93,24 @@ function UserCreationForm() {
     fetchData();
   }, [submitted]);
 
-  const onSubmit = (values: z.infer<typeof UserCreationSchema>) => {
-    setError("");
-    setSuccess("");
-    startTransition(() => {
-      createUser(values).then((data) => {
-        setError(data?.error);
-        setSuccess(data?.success);
-        console.log(data);
-      });
+  function onSubmit(values: z.infer<typeof MemberCreationSchema>) {
+    startTransition(async () => {
+      console.log("kkkk");
+      await createMember(values)
+        .then((res) => {
+          console.log(res);
+          form.reset();
+          setSubmitted((prev) => !prev);
+        })
+        .catch((err) => {
+          toast({
+            title: "Error posting",
+            description: err?.message,
+          });
+          throw new Error(err.message);
+        });
     });
-  };
-  const no_dep = !departments || departments.length === 0;
+  }
 
   return (
     <Form {...form}>
@@ -161,8 +161,7 @@ function UserCreationForm() {
               />
             </div>
           </div>
-          {/*  <div className="lg:flex lg:flex-row lg:justify-between lg:space-x-5">
-            <div className="w-full lg:w-1/2"> */}
+         
           <FormField
             control={form.control}
             name="email"
@@ -181,63 +180,39 @@ function UserCreationForm() {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="ecnum"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>EC Number</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="ZE125688"
+                    type="text"
+                    disabled={isPending}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
-            name="role"
+            name="designation"
             render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Reference</FormLabel>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between",
-                          !field.value && "text-muted-foreground",
-                        )}
-                      >
-                        {field.value
-                          ? roles.find((role) => role.value === field.value)
-                              ?.label
-                          : "Select Role"}
-                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[200px] p-0 pt-2">
-                    <Command>
-                      <CommandInput placeholder="Search reference type..." />
-                      <CommandList>
-                        <CommandEmpty>No role selected.</CommandEmpty>
-                        <CommandGroup>
-                          {roles.map((role) => (
-                            <CommandItem
-                              value={role.label}
-                              key={role.value}
-                              onSelect={() => {
-                                form.setValue("role", role.value);
-                              }}
-                            >
-                              {role.label}
-                              <Check
-                                className={cn(
-                                  "ml-auto",
-                                  role.value === field.value
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormDescription>This is the role of the user</FormDescription>
+              <FormItem>
+                <FormLabel>Designation</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="System Developer"
+                    type="text"
+                    disabled={isPending}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -385,30 +360,12 @@ function UserCreationForm() {
         </div>
         <FormError message={error} />
         <FormSuccess message={success} />
-        <Button disabled={isPending || no_dep} type="submit" className="w-full">
+        <Button disabled={isPending} type="submit" className="w-full">
           Create
         </Button>
-        {no_dep && (
-          <>
-            <p>You can create a department here to be able to create a user</p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="mx-auto w-full">
-                  Create department and section
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]  ">
-                <DialogHeader>
-                  <DialogTitle>Create Department</DialogTitle>
-                </DialogHeader>
-                <DepartmentCreationForm />
-              </DialogContent>
-            </Dialog>
-          </>
-        )}
       </form>
     </Form>
   );
 }
 
-export default UserCreationForm;
+export default MemberCreationForm;

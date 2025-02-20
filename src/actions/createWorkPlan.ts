@@ -10,6 +10,10 @@ export type WorkPlan = {
     month: string;
     week: string;
     scope: string;
+    year: string;
+startDate: Date;
+target: Date;
+    weeklyTarget: number;
     team: string[]
 }
 export async function createWorkPlan(workplan: WorkPlan) {
@@ -17,14 +21,26 @@ export async function createWorkPlan(workplan: WorkPlan) {
 
     console.log(session)
     noStore();
-    console.log('kkkkkk hhhh')
+    /* 
+    status": "IN_PROGRESS",
+      "startDate": "2025-02-18T20:00:43.230Z",
+      "targetCompletionDate": "2025-02-18T20:00:43.230Z",
+      "actualCompletionDate": "2025-02-18T20:00:43.230Z",
+    */
     const wp = {
         "month": workplan.month,
         "week": workplan.week,
+        "year": workplan.year,
+  "weeklyTarget": workplan.weeklyTarget,
+  "sectionId": session?.user?.sectionId,
+  "departmentId": session?.user?.departmentId,
         "scopes": [
             {
                 "details": workplan.scope,
-                "assignedTeamMemberIds": []
+                "assignedTeamMemberIds": workplan.team,
+                "status": "IN_PROGRESS",
+      "startDate": workplan.startDate,
+      "targetCompletionDate": workplan.target,
             }
         ]
     }

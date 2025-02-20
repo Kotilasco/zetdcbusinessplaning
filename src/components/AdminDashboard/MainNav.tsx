@@ -19,7 +19,7 @@ export async function MainNav({
       >
         Overview
       </Link>
-      {role === UserRoles.ROLE_ADMIN && (
+     {/*  {role === UserRoles.ROLE_ADMIN && (
         <>
           <Link
             href="?view=customers"
@@ -40,7 +40,7 @@ export async function MainNav({
             Settings
           </Link>
         </>
-      )}
+      )} */}
     </nav>
   );
 }

@@ -4,37 +4,34 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
 import { getAllWorkPlans } from "@/actions/getWorkPlans";
 import Link from "next/link";
-import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
+import {
+  getMembersByDepartmentId,
+  getMembersBySectionId,
+} from "@/actions/getTeamMembers";
 import { auth, signOut } from "@/auth";
 import { UserRoles } from "@/next-auth.d";
 
-export async function RecentActivities() {
+export async function Members() {
   const session = await auth();
-  let activities = [];
-  if (session?.user.role == UserRoles.ROLE_ADMIN) {
-    activities = await getAllWorkPlans();
+  let members = [];
+  if (session?.user.role == UserRoles.ROLE_SENIORMANAGER) {
+    members = (await getMembersByDepartmentId()) || [];
   } else {
-    activities = await getAllWorkPlansBySection();
+    members = await getMembersBySectionId();
   }
 
-  // console.log(activities);
+
 
   return (
     <div className="space-y-8">
-      {activities?.length > 0 ? (
-        activities.map((activity) => (
-          <div className="flex items-center" key={activity.id}>
+      {members?.length > 0 ? (
+        members.map((member) => (
+          <div className="flex items-center" key={member.id}>
             <div className="ml-4 space-y-1">
               <p className="text-sm font-medium leading-none">
-                {activity.scopes?.map((scope) => scope.details).join(", ")}
+                {member.firstname} {member.lastname}
               </p>
-              <p className="text-sm text-muted-foreground">
-                {activity.scopes
-                  ?.flatMap((scope) =>
-                    scope.assignedTeamMembers?.map((member) => member.email),
-                  )
-                  .join(" - ")}
-              </p>
+              <p className="text-sm text-muted-foreground">{members.email}</p>
             </div>
             <div className="ml-auto font-medium">
               <Button>View</Button>
@@ -48,15 +45,11 @@ export async function RecentActivities() {
             <AvatarFallback>NO</AvatarFallback>
           </Avatar>
           <div className="ml-4 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              No recent activities
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Head to workplans to create one
-            </p>
+            <p className="text-sm font-medium leading-none">No members</p>
+            <p className="text-sm text-muted-foreground">Create member</p>
           </div>
           <div className="ml-auto font-medium">
-            <Link href="/reports/monthly/workplan">
+            <Link href="/">
               <Button size={"sm"}>Create</Button>
             </Link>
           </div>

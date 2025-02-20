@@ -5,19 +5,11 @@ import { Button } from "../ui/button";
 import { getAllWorkPlans } from "@/actions/getWorkPlans";
 import Link from "next/link";
 import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
-import { auth, signOut } from "@/auth";
-import { UserRoles } from "@/next-auth.d";
 
-export async function RecentActivities() {
-  const session = await auth();
-  let activities = [];
-  if (session?.user.role == UserRoles.ROLE_ADMIN) {
-    activities = await getAllWorkPlans();
-  } else {
-    activities = await getAllWorkPlansBySection();
-  }
+export async function RecentPlans() {
+  const activities = (await getAllWorkPlansBySection()) || [];
 
-  // console.log(activities);
+  console.log(activities);
 
   return (
     <div className="space-y-8">

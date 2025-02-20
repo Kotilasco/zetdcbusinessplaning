@@ -60,6 +60,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { updateWeeklyReport } from "@/actions/updateWeeklyReport";
+import { getAllWorkPlansFilter } from "@/actions/getWorkPlansFilter";
+import { hasPermission } from "@/permissions";
+import { currentRole } from "@/lib/auth";
+import { useCurrentRole } from "@/hooks/use-current-role";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -118,7 +122,15 @@ const SHEET_SIDES = ["right"] as const;
 
 type SheetSide = (typeof SHEET_SIDES)[number];
 
-function WeeklyReport() {
+interface WeeklyTableProps {
+  year: string;
+
+  month: string;
+
+  week: string;
+}
+
+const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -126,7 +138,6 @@ function WeeklyReport() {
 
   const [formData, setFormData] = useState({
     activity: "",
-    weeklyTarget: 0,
     actualWorkDone: 0,
     percentageComplete: 0,
     actualExpenditure: 0,
@@ -166,11 +177,12 @@ function WeeklyReport() {
     { id: 4, name: "Diana" },
   ];
 
+  const role = useCurrentRole();
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setReports([...reports, formData]);
     setFormData({
-      weeklyTarget: 0,
       actualWorkDone: 0,
       percentageComplete: 0,
       actualExpenditure: 0,
@@ -183,8 +195,8 @@ function WeeklyReport() {
     setIsLoading(true);
     const fetchData = async () => {
       try {
-        const response = await getAllWorkPlans();
-
+        const response = await getAllWorkPlansFilter({ year, month, week });
+        console.log("jjjjjj");
         setReports(response);
       } catch (error: any) {
         console.log("");
@@ -194,10 +206,10 @@ function WeeklyReport() {
     };
 
     fetchData();
-  }, [submitted]);
+  }, [submitted, year, month, week]);
 
   function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
-    console.log(data);
+    //console.log(data);
     startTransition(async () => {
       console.log(data);
       console.log("kkkk");
@@ -216,84 +228,84 @@ function WeeklyReport() {
   console.log(reports);
 
   return (
-    <DefaultLayout>
-      <div className="p-4">
-        <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
-        <div className="no-scrollbar overflow-x-auto">
-          <table className="w-full border-collapse border border-gray-300">
-            <thead className="bg-black text-white">
-              <tr>
-                <th className="border p-2">Activity</th>
-                <th className="border p-2">Weekly Target</th>
-                <th className="border p-2">Actual Work Done</th>
-                <th className="border p-2">Team Members</th>
-                <th className="border p-2">Percentage Complete</th>
-                <th className="border p-2">Actual Expenditure</th>
-                <th className="border p-2">% of Budget</th>
-                <th className="border p-2">Remarks</th>
+    <div className="p-4">
+      <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
+      <div className="no-scrollbar overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300">
+          <thead className="bg-black text-white">
+            <tr>
+              <th className="border p-2">Activity</th>
+              <th className="border p-2">Weekly Target</th>
+              <th className="border p-2">Actual Work Done</th>
+              <th className="border p-2">Team Members</th>
+              <th className="border p-2">Percentage Complete</th>
+              <th className="border p-2">Actual Expenditure</th>
+              <th className="border p-2">% of Budget</th>
+              <th className="border p-2">Remarks</th>
+              {role && hasPermission([role], "update:report") && (
                 <th className="border p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading
-                ? // Display skeleton loader rows
-                  Array.from({ length: 5 }).map((_, index) => (
-                    <tr key={index} className="border">
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading
+              ? // Display skeleton loader rows
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} className="border">
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    {role && hasPermission([role], "update:report") && (
                       <td className="border p-2">
                         <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
                       </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                      <td className="border p-2">
-                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                      </td>
-                    </tr>
-                  ))
-                : // Display actual data rows
-                  reports?.map((report, index) => (
-                    <tr key={index} className="border">
-                      <td className="border p-2">
-                        {report.scopes
-                          ?.map((scope) => scope.details)
-                          .join(", ")}
-                      </td>
-                      <td className="border p-2">{report.weeklyTarget}</td>
-                      <td className="border p-2">{report.actualWorkDone}</td>
-                      <td className="border p-2">
-                        {" "}
-                        {report.scopes
-                          ?.flatMap((scope) =>
-                            scope.assignedTeamMembers?.map(
-                              (member) => member.email,
-                            ),
-                          )
-                          .join(", ")}
-                      </td>
-                      <td className="border p-2">
-                        {report.percentageComplete}
-                      </td>
-                      <td className="border p-2">{report.actualExpenditure}</td>
-                      <td className="border p-2">{report.percentOfBudget}</td>
-                      <td className="border p-2">{report.remarks}</td>
+                    )}
+                  </tr>
+                ))
+              : // Display actual data rows
+                reports?.map((report, index) => (
+                  <tr key={index} className="border">
+                    <td className="border p-2">
+                      {report.scopes?.map((scope) => scope.details).join(", ")}
+                    </td>
+                    <td className="border p-2">{report.weeklyTarget}</td>
+                    <td className="border p-2">{report.actualWorkDone}</td>
+                    <td className="border p-2">
+                      {" "}
+                      {report.scopes
+                        ?.flatMap((scope) =>
+                          scope.assignedTeamMembers?.map(
+                            (member) => member.email,
+                          ),
+                        )
+                        .join(", ")}
+                    </td>
+                    <td className="border p-2">{report.percentageComplete}</td>
+                    <td className="border p-2">{report.actualExpenditure}</td>
+                    <td className="border p-2">{report.percentOfBudget}</td>
+                    <td className="border p-2">{report.remarks}</td>
+                    {role && hasPermission([role], "update:report") && (
                       <td className="flex items-center justify-around space-x-1 border p-2">
                         <div className="">
                           <Sheet>
@@ -433,7 +445,7 @@ function WeeklyReport() {
                             </SheetContent>
                           </Sheet>
                         </div>
-                        <Dialog>
+                        {/* <Dialog>
                           <DialogTrigger asChild>
                             <Button size={"sm"} className="">
                               <p className="hidden lg:block">Delete</p>
@@ -495,16 +507,16 @@ function WeeklyReport() {
                               <Button type="submit">Save changes</Button>
                             </DialogFooter>
                           </DialogContent>
-                        </Dialog>
+                        </Dialog> */}
                       </td>
-                    </tr>
-                  ))}
-            </tbody>
-          </table>
-        </div>
+                    )}
+                  </tr>
+                ))}
+          </tbody>
+        </table>
       </div>
-    </DefaultLayout>
+    </div>
   );
-}
+};
 
 export default WeeklyReport;

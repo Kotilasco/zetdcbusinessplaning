@@ -186,13 +186,13 @@ export default function DashboardPage() {
                 </Card>
                 <Card className="col-span-3">
                   <CardHeader>
-                    <CardTitle>Recent Sales</CardTitle>
+                    <CardTitle>Recent Activities</CardTitle>
                     <CardDescription>
-                      You made 265 sales this month.
+                      Recently actioned activities
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <RecentSales />
+                    <RecentActivities />
                   </CardContent>
                 </Card>
               </div>

@@ -42,8 +42,9 @@ async function createAndAssignSection(section, appId, accessToken) {
 
   console.log(sectionData);
 
+  // /api/departments/department/{departmentId}/add/sections
   const assignResponse = await fetch(
-    `${process.env.BASE_URL}/api/sections/${appId}/assignSections`,
+    `${process.env.BASE_URL}/api/departments/department/${appId}/add/sections`,
     {
       method: "POST",
       body: JSON.stringify({ sectionIds: [sectionData.id] }),
@@ -135,7 +136,6 @@ function treatEmptyStringsAsEmptyArray(arr) {
   const filteredArray = arr.filter((item) => item.trim() !== "");
   return filteredArray.length === 0 ? [] : filteredArray;
 }
-
 
 async function safeJsonParse(response) {
   try {

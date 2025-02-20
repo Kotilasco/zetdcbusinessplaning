@@ -85,7 +85,7 @@ function DepartmentCreationForm() {
       >
         <div className="space-y-2">
           <div className="lg:flex lg:flex-row lg:justify-between lg:space-x-5">
-            <div className="w-full lg:w-1/2">
+            <div className="w-full">
               <FormField
                 control={form.control}
                 name="name"
@@ -111,7 +111,7 @@ function DepartmentCreationForm() {
               key={index}
               className="lg:flex lg:flex-row lg:justify-between lg:space-x-5"
             >
-              <div className="w-full lg:w-1/2">
+              <div className="w-full">
                 <FormField
                   control={form.control}
                   name={`sections.${index}`}

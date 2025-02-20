@@ -51,20 +51,39 @@ import {
 import { MONTHS, WEEKS } from "@/data/constants";
 import { createWorkPlan } from "@/actions/createWorkPlan";
 import { getAllWorkPlans, workPlans } from "@/actions/getWorkPlans";
+import { getMembersBySectionId } from "@/actions/getTeamMembers";
+import { Input } from "@/components/ui/input";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { cn } from "@/lib/utils";
+import { useCurrentRole } from "@/hooks/use-current-role";
+import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
+import { hasPermission } from "@/permissions";
 
-const FormSchema = z.object({
+export const FormSchema = z.object({
   month: z.string({
     required_error: "Please select a month.",
   }),
   week: z.string({
     required_error: "Please select a week.",
   }),
+  year: z.string({
+    required_error: "Please select a week.",
+  }),
+  weeklyTarget: z.preprocess(
+    (val) => (val !== "" ? Number(val) : undefined), // Convert to number
+    z.number({
+      required_error: "Please input a weekly target",
+    }),
+  ),
   scope: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
-  team: z.array(z.string()).refine((value) => value.some((item) => item), {
+  team: z.array(z.number()).refine((value) => value.some((item) => item), {
     message: "You have to select at least one item.",
   }),
+  target: z.date({ required_error: "Please select a date." }),
+  startDate: z.date({ required_error: "Please select a date." }),
 });
 
 export default function SelectForm() {
@@ -74,12 +93,17 @@ export default function SelectForm() {
     week: "",
     scope: "",
     teamMembers: [],
+    startDate: null,
+    target: null,
   });
+
+  const role = useCurrentRole();
 
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [members, setMembers] = useState(null);
 
   const teamMembers = [
     { id: "1", name: "Alice" },
@@ -88,6 +112,8 @@ export default function SelectForm() {
     { id: "4", name: "Diana" },
   ];
 
+  const years = Array.from({ length: 1 }, (_, i) => 2025 + i);
+
   const handleToggleMember = (memberName) => {
     setSelectedMembers((prevSelected) =>
       prevSelected.includes(memberName)
@@ -95,7 +121,7 @@ export default function SelectForm() {
         : [...prevSelected, memberName],
     );
   };
-
+  const today = new Date();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
@@ -105,7 +131,7 @@ export default function SelectForm() {
     setIsLoading(true);
     const fetchData = async () => {
       try {
-        const response = await getAllWorkPlans();
+        const response = await getAllWorkPlansBySection();
 
         setWorkPlans(response);
       } catch (error: any) {
@@ -113,6 +139,23 @@ export default function SelectForm() {
           title: "Error fetch",
           description: error?.message,
         });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getMembersBySectionId();
+
+        setMembers(response);
+      } catch (error: any) {
+        console.log(error);
       } finally {
         setIsLoading(false);
       }
@@ -143,7 +186,7 @@ export default function SelectForm() {
         .then((res) => {
           console.log(res);
           form.reset();
-          setSubmitted((prev) => !prev); 
+          setSubmitted((prev) => !prev);
         })
         .catch((err) => {
           toast({
@@ -204,178 +247,274 @@ export default function SelectForm() {
                             (member) => member.email,
                           ),
                         )
-                        .join(", ")}
+                        .join(" - ")}
                     </td>
                   </tr>
                 ))}
           </tbody>
         </table>
 
-        <div className="mt-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="default" className="mt-5">
-                Add Work Plan <PlusIcon size={16} className="ml-2" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader>
-                <SheetTitle>Add Work Plan</SheetTitle>
-                <SheetDescription>
-                  Add a work plan for a particular month.
-                </SheetDescription>
-              </SheetHeader>
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="mb-6 grid gap-4 py-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="month"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Month</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Select a month" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Month</SelectLabel>
-                              {MONTHS.map((month) => (
-                                <SelectItem value={month.value}>
-                                  {month.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="week"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Week</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="w-[180px]">
-                              <SelectValue placeholder="Select a week" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectLabel>Week</SelectLabel>
-                              {WEEKS.map((week) => (
-                                <SelectItem value={week.value}>
-                                  {week.label}
-                                </SelectItem>
-                              ))}
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        {role && hasPermission([role], "create:workplan") && (
+          <div className="mt-4">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="default" className="mt-5">
+                  Add Work Plan <PlusIcon size={16} className="ml-2" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent
+                side="right"
+                className="no-scrollbar h-full overflow-y-auto"
+              >
+                <SheetHeader>
+                  <SheetTitle>Add Work Plan</SheetTitle>
+                  <SheetDescription>
+                    Add a work plan for a particular month.
+                  </SheetDescription>
+                </SheetHeader>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="mb-6 grid gap-4 py-4"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="week"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Week</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select a week" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Week</SelectLabel>
+                                {WEEKS.map((week) => (
+                                  <SelectItem value={week.value}>
+                                    {week.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="month"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Month</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select a month" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Month</SelectLabel>
+                                {MONTHS.map((month) => (
+                                  <SelectItem value={month.value}>
+                                    {month.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="year"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Year</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select a year" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectGroup>
+                                {years.map((year) => (
+                                  <SelectItem value={year.toString()}>
+                                    {year.toString()}
+                                  </SelectItem>
+                                ))}
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="scope"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Scope</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Write the scope to be performed"
-                            className="resize-none"
+                    <FormField
+                      control={form.control}
+                      name="scope"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Scope</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Write the scope to be performed"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="weeklyTarget"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Weekly Target</FormLabel>
+                          <Input
+                            placeholder="Enter weekly target"
+                            type="number"
                             {...field}
+                            defaultValue={0}
                           />
-                        </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="team"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="mb-4">
+                            <FormLabel className="text-base">
+                              Team Members
+                            </FormLabel>
+                            <FormDescription>
+                              Select the members you want to assign
+                            </FormDescription>
+                          </div>
+                          {members.map((item) => (
+                            <FormItem
+                              key={item.id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={
+                                    field.value?.includes(item.id) || false
+                                  } // Safely handle undefined
+                                  onCheckedChange={(checked) => {
+                                    const currentValue = field.value || []; // Initialize as an empty array if undefined
+                                    if (checked) {
+                                      field.onChange([
+                                        ...currentValue,
+                                        item.id,
+                                      ]); // Add member ID to the array
+                                    } else {
+                                      field.onChange(
+                                        currentValue.filter(
+                                          (value) => value !== item.id,
+                                        ), // Remove member ID from the array
+                                      );
+                                    }
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="text-sm font-normal">
+                                {item.firstname} {item.lastname}
+                              </FormLabel>
+                            </FormItem>
+                          ))}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="team"
-                    render={() => (
-                      <FormItem>
-                        <div className="mb-4">
-                          <FormLabel className="text-base">
-                            Team Members
-                          </FormLabel>
-                          <FormDescription>
-                            Select the members you want to assign
-                          </FormDescription>
-                        </div>
-                        {teamMembers.map((item) => (
-                          <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="team"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={item.id}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(item.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...field.value,
-                                              item.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== item.id,
-                                              ),
-                                            );
-                                      }}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="text-sm font-normal">
-                                    {item.name}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button disabled={isPending} type="submit">
-                    Submit
-                  </Button>
-                </form>
-              </Form>
+                    <FormField
+                      control={form.control}
+                      name="startDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Starting Date</FormLabel>
+                          <FormControl>
+                            <DatePicker
+                              selected={field.value}
+                              onChange={field.onChange}
+                              minDate={today}
+                              dateFormat="yyyy-MM-dd"
+                              className={cn(
+                                "w-full rounded-md border px-3 py-2",
+                                form.formState.errors.date && "border-red-500",
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage>
+                            {form.formState.errors.date?.message}
+                          </FormMessage>
+                        </FormItem>
+                      )}
+                    />
 
-              <SheetFooter>
-                <SheetClose asChild>
-                  <Button hidden>Close</Button>
-                </SheetClose>
-              </SheetFooter>
-            </SheetContent>
-          </Sheet>
-        </div>
+                    <FormField
+                      control={form.control}
+                      name="target"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Target Date</FormLabel>
+                          <FormControl>
+                            <DatePicker
+                              selected={field.value}
+                              onChange={field.onChange}
+                              minDate={today}
+                              dateFormat="yyyy-MM-dd"
+                              className={cn(
+                                "w-full rounded-md border px-3 py-2",
+                                form.formState.errors.date && "border-red-500",
+                              )}
+                            />
+                          </FormControl>
+                          <FormMessage>
+                            {form.formState.errors.date?.message}
+                          </FormMessage>
+                        </FormItem>
+                      )}
+                    />
+                    <Button disabled={isPending} type="submit">
+                      Submit
+                    </Button>
+                  </form>
+                </Form>
+
+                <SheetFooter>
+                  <SheetClose asChild>
+                    <Button hidden>Close</Button>
+                  </SheetClose>
+                </SheetFooter>
+              </SheetContent>
+            </Sheet>
+          </div>
+        )}
       </div>
     </DefaultLayout>
   );

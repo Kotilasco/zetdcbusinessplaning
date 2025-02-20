@@ -1,3 +1,4 @@
+import { setConfig } from 'next/config';
 import { UserRoles } from './../next-auth.d';
 
 import * as z from "zod"
@@ -84,6 +85,56 @@ export const DepartmentCreationSchema = z.object({
     sections: z.array(z.string())
 })
 
+export const MemberCreationSchemaByManager = z.object({
+    firstname: z.string().min(1, {
+        message: "First name is required",
+    }),
+    email: z.string().email({
+        message: "Email is required"
+    }),
+    lastname: z.string().min(1, {
+        message: "Last name is required",
+    }),
+    designation: z.string().min(1, {
+        message: "Disgnation is required",
+    }),
+    ecnum: z.string().min(1, {
+        message: "Ec Number is required",
+    }),
+
+})
+
+export const MemberCreationSchema = z.object({
+    firstname: z.string().min(1, {
+        message: "First name is required",
+    }),
+    email: z.string().email({
+        message: "Email is required"
+    }),
+    lastname: z.string().min(1, {
+        message: "Last name is required",
+    }),
+    designation: z.string().min(1, {
+        message: "Disgnation is required",
+    }),
+    ecnum: z.string().min(1, {
+        message: "Ec Number is required",
+    }),
+    department: z.number({required_error: "Please enter a valid EC number"}),
+    section: z.number({required_error: "Please enter a valid EC number"}),
+
+})
+
+/* 
+{
+  "firstname": "string",
+  "lastname": "string",
+  "email": "string",
+  "role": "SUPERADMIN",
+  "sectionId": 0,
+  "departmentId": 0
+}
+*/
 
 export const UserCreationSchema = z.object({
     firstname: z.string().min(1, {
@@ -95,16 +146,15 @@ export const UserCreationSchema = z.object({
     lastname: z.string().min(1, {
         message: "Last name is required",
     }),
-    district: z.string().min(1, {
-        message: "District is required",
-    }),
     role: z
         .string({
             required_error: "Please enter a role",
         })
-        .min(4, {
+        .min(2, {
             message: "Reference number must be at least 4 characters long.",
         }),
+        department: z.number({required_error: "Please enter a valid EC number"}),
+        section: z.number({required_error: "Please enter a valid EC number"}),
 
 })
 
