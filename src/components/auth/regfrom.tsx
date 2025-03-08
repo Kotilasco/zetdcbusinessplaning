@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { register, registration } from "@/actions/register";
+import { register, registration } from "@/app/actions/register";
 import { ComboboxForm } from "./Reference";
 import {
   Command,
@@ -63,7 +63,6 @@ function RegForm() {
   });
 
   const onSubmit = (values: z.infer<typeof RegistrationSchema>) => {
-    
     setError("");
     setSuccess("");
     startTransition(() => {
@@ -78,7 +77,7 @@ function RegForm() {
   return (
     <Form {...form}>
       <form
-        className="space-y-4 w-full bg-white lg:mt-2 p-5  h-[95%] lg:h-[70%]"
+        className="h-[95%] w-full space-y-4 bg-white p-5  lg:mt-2 lg:h-[70%]"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="space-y-2">
@@ -202,12 +201,12 @@ function RegForm() {
                         role="combobox"
                         className={cn(
                           "w-full justify-between",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
                         )}
                       >
                         {field.value
                           ? references.find(
-                              (reference) => reference.value === field.value
+                              (reference) => reference.value === field.value,
                             )?.label
                           : "Select Reference"}
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -234,7 +233,7 @@ function RegForm() {
                                   "ml-auto",
                                   reference.value === field.value
                                     ? "opacity-100"
-                                    : "opacity-0"
+                                    : "opacity-0",
                                 )}
                               />
                             </CommandItem>
@@ -280,8 +279,8 @@ function RegForm() {
           Create an account
         </Button>
 
-        <div className="mx-auto flex w-full justify-center items-center mt-2 ">
-          <h1 className="text-black font-normal underline text-sm">
+        <div className="mx-auto mt-2 flex w-full items-center justify-center ">
+          <h1 className="text-sm font-normal text-black underline">
             <Link href={"/auth/login"}>Already have an account?</Link>
           </h1>
         </div>

@@ -17,7 +17,7 @@ export type WorkPlan = {
 export async function createMember(data: z.infer<typeof MemberCreationSchema>) {
     const session = await auth();
 
-    console.log(session)
+    //console.log(session)
     noStore();
     console.log('kkkkkk hhhh')
 
@@ -47,7 +47,7 @@ export async function createMember(data: z.infer<typeof MemberCreationSchema>) {
         }
 
         const res = await response.json()
-        console.log(res)
+       // console.log(res)
         if (res.ok) {
     
             return {
@@ -71,7 +71,7 @@ export async function createMember(data: z.infer<typeof MemberCreationSchema>) {
 export async function createMemberByManager(data: z.infer<typeof MemberCreationSchemaByManager>) {
     const session = await auth();
 
-    console.log(session)
+   // console.log(session)
     noStore();
     console.log('kkkkkk hhhh')
 
@@ -101,7 +101,7 @@ export async function createMemberByManager(data: z.infer<typeof MemberCreationS
         }
 
         const res = await response.json()
-        console.log(res)
+       // console.log(res)
         if (res.ok) {
     
             return {

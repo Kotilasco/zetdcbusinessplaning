@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { createUser, register } from "@/actions/register";
+import { createUser, register } from "@/app/actions/register";
 import { ComboboxForm } from "./Reference";
 import {
   Command,
@@ -54,7 +54,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Link from "next/link";
-import { getDepartments } from "@/actions/getDepartments";
+import { getDepartments } from "@/app/actions/getDepartments";
 import DepartmentCreationForm from "../AdminDashboard/DepartmentCreationForm";
 
 const roles = [
@@ -106,7 +106,7 @@ function UserCreationForm() {
       createUser(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
-        console.log(data);
+        // console.log(data);
       });
     });
   };

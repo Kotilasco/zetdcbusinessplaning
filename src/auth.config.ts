@@ -18,7 +18,7 @@ export default {
                     })
                     const user = await res.json()
 
-                    console.log(user)
+                    //console.log(user)
 
                 
 

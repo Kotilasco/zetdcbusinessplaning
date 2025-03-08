@@ -13,13 +13,13 @@ export type WorkPlan = {
     year: string;
 startDate: Date;
 target: Date;
-    weeklyTarget: number;
+    weeklyTarget: string;
     team: string[]
 }
 export async function createWorkPlan(workplan: WorkPlan) {
     const session = await auth();
 
-    console.log(session)
+  //  console.log(session)
     noStore();
     /* 
     status": "IN_PROGRESS",

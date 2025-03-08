@@ -2,9 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import Link from "next/link";
-import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
+import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
 import { auth, signOut } from "@/auth";
 import { UserRoles } from "@/next-auth.d";
 
@@ -37,7 +37,9 @@ export async function RecentActivities() {
               </p>
             </div>
             <div className="ml-auto font-medium">
-              <Button>View</Button>
+              <Button>
+                <Link href={`/work/plan/${activity.id}`}>View</Link>
+              </Button>
             </div>
           </div>
         ))

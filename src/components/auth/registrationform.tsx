@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { register } from "@/actions/register";
+import { register } from "@/app/actions/register";
 import { ComboboxForm } from "./Reference";
 import {
   Command,
@@ -74,10 +74,10 @@ function RegistrationForm() {
     });
   };
   return (
-    <div className=" bg-transparent flex w-full md:w-[75%] md:mx-auto h-full pb-5 md:justify-center md:items-center  md:shadow-lg">
+    <div className=" flex h-full w-full bg-transparent pb-5 md:mx-auto md:w-[75%] md:items-center md:justify-center  md:shadow-lg">
       <Form {...form}>
         <form
-          className="space-y-4 w-full bg-white lg:mt-2 p-5  h-[95%] lg:h-[70%]"
+          className="h-[95%] w-full space-y-4 bg-white p-5  lg:mt-2 lg:h-[70%]"
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <div className="space-y-2">
@@ -200,12 +200,12 @@ function RegistrationForm() {
                           role="combobox"
                           className={cn(
                             "w-full justify-between",
-                            !field.value && "text-muted-foreground"
+                            !field.value && "text-muted-foreground",
                           )}
                         >
                           {field.value
                             ? references.find(
-                                (reference) => reference.value === field.value
+                                (reference) => reference.value === field.value,
                               )?.label
                             : "Select Reference"}
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -234,7 +234,7 @@ function RegistrationForm() {
                                     "ml-auto",
                                     reference.value === field.value
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                               </CommandItem>
@@ -280,8 +280,8 @@ function RegistrationForm() {
             Create an account
           </Button>
 
-          <div className="mx-auto flex w-full justify-center items-center mt-2 ">
-            <h1 className="text-black font-normal underline text-sm">
+          <div className="mx-auto mt-2 flex w-full items-center justify-center ">
+            <h1 className="text-sm font-normal text-black underline">
               <Link href={"/auth/login"}>Already have an account?</Link>
             </h1>
           </div>

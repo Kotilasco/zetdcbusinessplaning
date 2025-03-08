@@ -2,9 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import Link from "next/link";
-import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
+import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
 
 export async function RecentPlans() {
   const activities = (await getAllWorkPlansBySection()) || [];

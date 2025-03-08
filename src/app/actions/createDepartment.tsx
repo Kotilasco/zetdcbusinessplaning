@@ -15,7 +15,7 @@ type Dept = {
 };
 
 async function createAndAssignSection(section, appId, accessToken) {
-  console.log(section);
+ // console.log(section);
 
   const sectionResponse = await fetch(
     `${process.env.BASE_URL}/api/sections/create`,
@@ -40,7 +40,7 @@ async function createAndAssignSection(section, appId, accessToken) {
     throw new Error("Invalid section data returned from the server");
   }
 
-  console.log(sectionData);
+  //console.log(sectionData);
 
   // /api/departments/department/{departmentId}/add/sections
   const assignResponse = await fetch(
@@ -106,11 +106,11 @@ export async function createDepartment(department: Dept) {
       throw new Error("Invalid department data returned from the server");
     }
 
-    console.log(app);
+    //console.log(app);
 
     const sectionsArr = treatEmptyStringsAsEmptyArray(sections);
 
-    console.log(sectionsArr.length);
+    //console.log(sectionsArr.length);
 
     // Create sections and assign them to the department
     if (sectionsArr.length > 0) {

@@ -55,11 +55,11 @@ import {
 import { MONTHS, WEEKS } from "@/data/constants";
 import { Delete, Pencil, PlusIcon } from "lucide-react";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { updateWeeklyReport } from "@/actions/updateWeeklyReport";
+import { updateWeeklyReport } from "@/app/actions/updateWeeklyReport";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -197,9 +197,9 @@ function WeeklyReport() {
   }, [submitted]);
 
   function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
-    console.log(data);
+    // console.log(data);
     startTransition(async () => {
-      console.log(data);
+      //   console.log(data);
       console.log("kkkk");
       await updateWeeklyReport({ ...data, reportId })
         .then((res) => {

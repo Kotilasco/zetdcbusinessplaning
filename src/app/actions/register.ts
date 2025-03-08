@@ -75,7 +75,7 @@ export const createUser = async (values: z.infer<typeof UserCreationSchema>) => 
     })
     const user = await res.json()
 
-    console.log(user)
+   // console.log(user)
 
     if (user !== null) {
     

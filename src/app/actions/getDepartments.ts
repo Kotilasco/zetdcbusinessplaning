@@ -28,7 +28,7 @@ export async function getDepartments(): Promise<Department[] | undefined> {
         throw new Error("BASE_URL is not defined in environment variables");
     }
 
-    console.log(baseUrl)
+    //console.log(baseUrl)
 
     try {
         console.log("Fetching departments...");
@@ -43,7 +43,7 @@ export async function getDepartments(): Promise<Department[] | undefined> {
 
         if (response.ok) {
             const app = await response.json(); // Extract JSON data from the response
-            console.log("Departments fetched successfully:", app);
+//console.log("Departments fetched successfully:", app);
             return app;
         } else {
             throw new Error(`Failed to fetch departments: ${response.statusText}`);

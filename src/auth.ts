@@ -33,9 +33,9 @@ export const {
             return true;
         },
         async signIn({ user }) {
-            console.log(user)
+          //  console.log(user)
             if (user.temporaryPassword) {
-                console.log("here we go")
+              //  console.log("here we go")
                 throw new Error("Please change your passsword")
                 return Response.redirect(new URL('/auth/change-password')); // Redirect to change password page
             }
@@ -47,7 +47,7 @@ export const {
 
             // 1. If this is the initial sign-in, add user information to the token
             if (user) {
-                console.log("JWT callback - Initial sign-in");
+               // console.log("JWT callback - Initial sign-in");
                 return {
                     ...token,
                     access_token: user.access_token,

@@ -49,15 +49,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MONTHS, WEEKS } from "@/data/constants";
-import { createWorkPlan } from "@/actions/createWorkPlan";
-import { getAllWorkPlans, workPlans } from "@/actions/getWorkPlans";
-import { getMembersBySectionId } from "@/actions/getTeamMembers";
+import { createWorkPlan } from "@/app/actions/createWorkPlan";
+import { getAllWorkPlans, workPlans } from "@/app/actions/getWorkPlans";
+import { getMembersBySectionId } from "@/app/actions/getTeamMembers";
 import { Input } from "@/components/ui/input";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { cn } from "@/lib/utils";
 import { useCurrentRole } from "@/hooks/use-current-role";
-import { getAllWorkPlansBySection } from "@/actions/getWorkPlansBySection";
+import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
 import { hasPermission } from "@/permissions";
 
 export const FormSchema = z.object({
@@ -70,12 +70,9 @@ export const FormSchema = z.object({
   year: z.string({
     required_error: "Please select a week.",
   }),
-  weeklyTarget: z.preprocess(
-    (val) => (val !== "" ? Number(val) : undefined), // Convert to number
-    z.number({
-      required_error: "Please input a weekly target",
-    }),
-  ),
+  weeklyTarget: z.string({
+    required_error: "Please enter a weekly target.",
+  }),
   scope: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
@@ -180,7 +177,7 @@ export default function SelectForm() {
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     startTransition(async () => {
-      console.log(data);
+      // console.log(data);
       console.log("kkkk");
       await createWorkPlan(data)
         .then((res) => {
@@ -391,12 +388,7 @@ export default function SelectForm() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Weekly Target</FormLabel>
-                          <Input
-                            placeholder="Enter weekly target"
-                            type="number"
-                            {...field}
-                            defaultValue={0}
-                          />
+                          <Input placeholder="Enter weekly target" {...field} />
                           <FormMessage />
                         </FormItem>
                       )}

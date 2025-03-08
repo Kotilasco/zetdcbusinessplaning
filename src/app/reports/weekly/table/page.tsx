@@ -18,6 +18,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -53,14 +64,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MONTHS, WEEKS } from "@/data/constants";
-import { Delete, Pencil, PlusIcon } from "lucide-react";
+import { Delete, Pencil, PlusIcon, TimerResetIcon } from "lucide-react";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { updateWeeklyReport } from "@/actions/updateWeeklyReport";
-import { getAllWorkPlansFilter } from "@/actions/getWorkPlansFilter";
+import { updateWeeklyReport } from "@/app/actions/updateWeeklyReport";
+import { getAllWorkPlansFilter } from "@/app/actions/getWorkPlansFilter";
 import { hasPermission } from "@/permissions";
 import { currentRole } from "@/lib/auth";
 import { useCurrentRole } from "@/hooks/use-current-role";
@@ -211,11 +222,9 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
   function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
     //console.log(data);
     startTransition(async () => {
-      console.log(data);
-      console.log("kkkk");
       await updateWeeklyReport({ ...data, reportId })
         .then((res) => {
-          console.log(res);
+          //   console.log(res);
           setSubmitted((prev) => !prev);
         })
         .catch((err) => {
@@ -225,7 +234,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
     });
   }
 
-  console.log(reports);
+  // console.log(reports);
 
   return (
     <div className="p-4">
@@ -445,69 +454,59 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                             </SheetContent>
                           </Sheet>
                         </div>
-                        {/* <Dialog>
-                          <DialogTrigger asChild>
-                            <Button size={"sm"} className="">
-                              <p className="hidden lg:block">Delete</p>
-                              <Delete className="text-white" size={10} />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                              <DialogTitle>Edit Record</DialogTitle>
-                              <DialogDescription>
-                                Make changes to your activity here. Click save
-                                when you're done.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <Card className="w-[350px]">
-                              <CardContent>
-                                <form>
-                                  <div className="grid w-full items-center gap-4">
-                                    <div className="flex flex-col space-y-1.5">
-                                      <Label htmlFor="name">Name</Label>
-                                      <Input
-                                        id="name"
-                                        placeholder="Name of your project"
-                                      />
-                                    </div>
-                                    <div className="flex flex-col space-y-1.5">
-                                      <Label htmlFor="framework">
-                                        Framework
-                                      </Label>
-                                      <Select>
-                                        <SelectTrigger id="framework">
-                                          <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent position="popper">
-                                          <SelectItem value="next">
-                                            Next.js
-                                          </SelectItem>
-                                          <SelectItem value="sveltekit">
-                                            SvelteKit
-                                          </SelectItem>
-                                          <SelectItem value="astro">
-                                            Astro
-                                          </SelectItem>
-                                          <SelectItem value="nuxt">
-                                            Nuxt.js
-                                          </SelectItem>
-                                        </SelectContent>
-                                      </Select>
-                                    </div>
-                                  </div>
-                                </form>
-                              </CardContent>
-                              <CardFooter className="flex justify-between">
-                                <Button variant="outline">Cancel</Button>
-                                <Button>Deploy</Button>
-                              </CardFooter>
-                            </Card>
-                            <DialogFooter>
-                              <Button type="submit">Save changes</Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog> */}
+                        <div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Reschedule</p>
+                                <TimerResetIcon
+                                  className="text-white"
+                                  size={10}
+                                />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently reschedule the ticket.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction>Continue</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                        <div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Cancel</p>
+                                <Delete className="text-white" size={10} />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently cancel you the ticket.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction>Continue</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       </td>
                     )}
                   </tr>

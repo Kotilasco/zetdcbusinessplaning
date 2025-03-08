@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { login } from "@/actions/login";
+import { login } from "@/app/actions/login";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();

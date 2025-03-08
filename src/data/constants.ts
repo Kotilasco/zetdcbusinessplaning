@@ -19,3 +19,10 @@ export const WEEKS = [
     {value: 'week3', label: 'Week 3'},
     {value: 'week4', label: 'Week 4'},
 ] as const
+
+export const QUARTERS = [
+    {value: "Q1", label: 'Q1'},
+    {value: 'Q2', label: 'Q2'},
+    {value: 'Q3', label: 'Q3'},
+    {value: 'Q4', label: 'Q4'},
+] as const

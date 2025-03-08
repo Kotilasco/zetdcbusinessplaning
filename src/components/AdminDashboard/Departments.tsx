@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { getDepartments } from "@/actions/getDepartments";
+import { getDepartments } from "@/app/actions/getDepartments";
 
 export async function Departments() {
   const departments = (await getDepartments()) || [];

@@ -2,14 +2,30 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import Link from "next/link";
 import {
   getMembersByDepartmentId,
   getMembersBySectionId,
-} from "@/actions/getTeamMembers";
+} from "@/app/actions/getTeamMembers";
 import { auth, signOut } from "@/auth";
 import { UserRoles } from "@/next-auth.d";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import Donut from "../Donut";
 
 export async function Members() {
   const session = await auth();
@@ -19,8 +35,6 @@ export async function Members() {
   } else {
     members = await getMembersBySectionId();
   }
-
-
 
   return (
     <div className="space-y-8">
@@ -34,7 +48,22 @@ export async function Members() {
               <p className="text-sm text-muted-foreground">{members.email}</p>
             </div>
             <div className="ml-auto font-medium">
-              <Button>View</Button>
+              {/* <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">View</Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[400px] rounded-lg bg-white p-4 shadow-lg">
+                  <div className="grid gap-4 ">
+                    <Donut data={member.id} />
+                  </div>
+                </PopoverContent>
+              </Popover> */}
+
+              <div className="ml-auto font-medium">
+                <Link href={`/team/members/${member.id}`}>
+                  <Button>View</Button>
+                </Link>
+              </div>
             </div>
           </div>
         ))

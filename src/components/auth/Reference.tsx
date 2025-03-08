@@ -60,7 +60,7 @@ export function ComboboxForm() {
     console.log(values);
     startTransition(() => {
       fetchByPjob(values?.pjob).then((data) => {
-        console.log(data);
+       // console.log(data);
         /* setError(data?.error);
         setSuccess(data?.success);
 

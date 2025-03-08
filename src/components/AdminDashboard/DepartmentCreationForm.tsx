@@ -34,7 +34,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Link from "next/link";
-import { createDepartment } from "@/actions/createDepartment";
+import { createDepartment } from "@/app/actions/createDepartment";
 
 function DepartmentCreationForm() {
   const [isPending, startTransition] = useTransition();
@@ -64,7 +64,7 @@ function DepartmentCreationForm() {
   };
 
   const handleSubmit = (data: any) => {
-    console.log(data);
+    // console.log(data);
   };
 
   const onSubmit = (values: z.infer<typeof DepartmentCreationSchema>) => {
@@ -72,7 +72,7 @@ function DepartmentCreationForm() {
     setSuccess("");
     startTransition(() => {
       createDepartment(values).then((data) => {
-        console.log(data);
+        //   console.log(data);
       });
     });
   };

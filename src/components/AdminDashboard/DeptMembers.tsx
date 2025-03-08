@@ -2,9 +2,9 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
-import { getAllWorkPlans } from "@/actions/getWorkPlans";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import Link from "next/link";
-import { getMembersBySectionId } from "@/actions/getTeamMembers";
+import { getMembersBySectionId } from "@/app/actions/getTeamMembers";
 
 export async function Members() {
   const members = (await getMembersByDepartmentId()) || [];

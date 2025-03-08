@@ -30,18 +30,24 @@ import MemberCreationByManagerForm from "./auth/member-creation-by-manager";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
 import { Members } from "./AdminDashboard/Members";
+import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
+import { processTaskData } from "@/lib/utils/processData";
 
 // Simulate a server-side data fetch (replace with your actual fetch logic)
 async function fetchRevenueData() {
   // Simulate a delay
-  await new Promise((resolve) => setTimeout(resolve, 200000));
-  return { totalRevenue: "$45,231.89", growth: "+20.1111%" };
+  await new Promise((resolve) => setTimeout(resolve, 2000));
+  return { totalRevenue: "$45,231.08", growth: "+20.000%" };
 }
 
 export const metadata: Metadata = {
   title: "Dashboard",
   description: "Customer Supplied Materials Scheme System's dashboard.",
 };
+
+const rev = await getAllWorkPlansBySection();
+
+const revenueData = processTaskData(rev);
 
 function SkeletonLoader() {
   return (
@@ -55,15 +61,17 @@ function SkeletonLoader() {
 async function RevenueData({
   revenueDataPromise,
 }: {
-  revenueDataPromise: Promise<{ totalRevenue: string; growth: string }>;
+  revenueDataPromise: Promise<{
+    totalRevenue: string;
+    growth: string;
+    statusCounts: { [key: string]: number };
+  }>;
 }) {
-  const revenueData = await revenueDataPromise; // Wait for the data here
+  console.log(revenueData);
   return (
     <div>
-      <div className="text-2xl font-bold">{revenueData.totalRevenue}</div>
-      <p className="text-xs text-muted-foreground">
-        {revenueData.growth} from last month
-      </p>
+      <div className="text-2xl font-bold">{revenueData.totalExpenditure}</div>
+      <p className="text-xs text-muted-foreground">Total expenditure</p>
     </div>
   );
 }
@@ -260,7 +268,7 @@ export default async function DashboardPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Total Revenue
+                      Total Expenditure
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -285,7 +293,7 @@ export default async function DashboardPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Subscriptions
+                      Overdue Tasks
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -297,46 +305,23 @@ export default async function DashboardPage() {
                       strokeWidth="2"
                       className="h-4 w-4 text-muted-foreground"
                     >
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                      <circle cx="12" cy="12" r="10" />
+                      <path d="M12 6v6l4 2" />
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">+2350</div>
+                    <div className="text-2xl font-bold">
+                      +{revenueData?.overdueCount}
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      +180.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <rect width="20" height="14" x="2" y="5" rx="2" />
-                      <path d="M2 10h20" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +19% from last month
+                      Number of tasks past the due date
                     </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                      Active Now
+                      IN PROGRESS
                     </CardTitle>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -348,13 +333,43 @@ export default async function DashboardPage() {
                       strokeWidth="2"
                       className="h-4 w-4 text-muted-foreground"
                     >
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                      <circle cx="12" cy="12" r="10" strokeOpacity="0.4" />
+                      <path d="M12 2a10 10 0 0 1 10 10h-4a6 6 0 0 0-6-6V2z" />
                     </svg>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">+573</div>
+                    <div className="text-2xl font-bold">
+                      {revenueData?.statusCounts["IN_PROGRESS"] || 0}
+                    </div>
                     <p className="text-xs text-muted-foreground">
-                      +201 since last hour
+                      Number of tasks currently being worked on
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                      Completed
+                    </CardTitle>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      className="h-4 w-4 text-muted-foreground"
+                    >
+                      <path d="M20 6L9 17l-5-5" />
+                    </svg>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">
+                      {revenueData?.statusCounts["COMPLETED"] || 0}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Number of completed tasks
                     </p>
                   </CardContent>
                 </Card>
@@ -362,15 +377,18 @@ export default async function DashboardPage() {
             </TabsContent>
             <TabsContent value="reports" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
-                <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Departments</CardTitle>
-                    <CardDescription>The departments present</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <Departments />
-                  </CardContent>
-                </Card>
+                {role && hasPermission([role], "view:department") && (
+                  <Card className="col-span-4">
+                    <CardHeader>
+                      <CardTitle>Departments</CardTitle>
+                      <CardDescription>The departments present</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                      <Departments />
+                    </CardContent>
+                  </Card>
+                )}
+
                 <Card className="col-span-4">
                   <CardHeader>
                     <CardTitle>Recent Activities</CardTitle>

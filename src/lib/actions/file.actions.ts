@@ -12,7 +12,7 @@ export const getFiles = async (folder: string) => {
     const applicationId = encodeURIComponent(folder)
 
     const data = await files.json();
-    console.log(data);
+    //console.log(data);
     return data;
 };
 
@@ -111,7 +111,7 @@ export const sendEmail = async (
             }),
         });
 
-        console.log(res)
+       // console.log(res)
 
         // const response = await res.json()
         //console.log(response)

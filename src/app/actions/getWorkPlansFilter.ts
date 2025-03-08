@@ -50,23 +50,24 @@ interface WeeklyTableProps {
   
   }
 
-export async function getAllWorkPlansBySection(data: WeeklyTableProps) {
+export async function getAllWorkPlansFilter(data: WeeklyTableProps) {
     const session = await auth();
 
     noStore();
 
-    console.log(session)
+   // console.log(session)
 
     try {
         console.log("hello filtering");
-        // /api/plans/findBy/departmentId/{departmentId}
+        // /api/plans/findBy/{sectionId}/{week}/{month}/{year}
 
-        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}`
-
+        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/${data.week}/${data.month}/${data.year}`
+        
         if(session?.user.role === UserRoles.ROLE_SENIORMANAGER){
-            url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.departmentId}`
-                    }
-       
+url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.departmentId}/${data.week}/${data.month}/${data.year}`
+        }
+
+        
         const response = await fetch(
             url,
             {
@@ -77,13 +78,11 @@ export async function getAllWorkPlansBySection(data: WeeklyTableProps) {
                 },
             }
         );
-
-        console.log(response)
        
         if (response.ok) {
             console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-            console.log(app);
+          //  console.log(app);
             return app;
         }
     } catch (error: any) {
