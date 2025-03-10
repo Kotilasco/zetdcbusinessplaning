@@ -20,7 +20,7 @@ export async function Members() {
               <p className="text-sm font-medium leading-none">
                 {member.firstname} {member.lastname}
               </p>
-              <p className="text-sm text-muted-foreground">{members.email}</p>
+              <p className="text-sm text-muted-foreground">{member.email}</p>
             </div>
             <div className="ml-auto font-medium">
               <Button>View</Button>

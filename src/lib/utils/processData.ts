@@ -16,7 +16,7 @@ export function processTaskData(data) {
 
         console.log('gfgdsdasdsddsfdf')
 
-        console.log(scope)
+        console.log(task)
   
         // 1. Overdue Tasks Count
         if (

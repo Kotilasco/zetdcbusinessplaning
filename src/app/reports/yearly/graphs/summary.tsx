@@ -17,7 +17,7 @@ import {
   Line,
 } from "recharts";
 
-const Dashboard = () => {
+const Summary = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [departmentData, setDepartmentData] = useState(null);
 
@@ -86,9 +86,6 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="mb-8 text-center text-3xl font-bold">
-        Department Dashboard
-      </h1>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
         {/* Bar Chart */}
@@ -189,4 +186,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Summary;

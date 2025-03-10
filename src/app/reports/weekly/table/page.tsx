@@ -64,7 +64,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { MONTHS, WEEKS } from "@/data/constants";
-import { Delete, Pencil, PlusIcon, TimerResetIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  Delete,
+  Pencil,
+  PlusIcon,
+  TimerResetIcon,
+} from "lucide-react";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,6 +81,15 @@ import { getAllWorkPlansFilter } from "@/app/actions/getWorkPlansFilter";
 import { hasPermission } from "@/permissions";
 import { currentRole } from "@/lib/auth";
 import { useCurrentRole } from "@/hooks/use-current-role";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { rescheduleThePlan } from "@/app/actions/rescheduleTask";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -129,6 +144,13 @@ export const FormSchema = z.object({
   reportId: z.number().optional(),
 });
 
+export const RescheduleSchema = z.object({
+  rescheduledDate: z.date({
+    required_error: "Please select a date",
+  }),
+  status: z.enum(["IN_PROGRESS", "COMPLETED", "CANCELLED", "RESCHEDULED"]),
+});
+
 const SHEET_SIDES = ["right"] as const;
 
 type SheetSide = (typeof SHEET_SIDES)[number];
@@ -146,6 +168,38 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // State for date picker
+  const [status, setStatus] = useState(""); // State for dropdown status
+
+  const handleConfirm = async (id: number) => {
+    console.log(id);
+    console.log("Selected Date:", selectedDate);
+    console.log("Selected Status:", status);
+    // Perform your rescheduling logic here
+
+    const payload = {
+      targetCompletionDate: selectedDate,
+      status,
+    };
+
+    // Make the server request
+    const response = await rescheduleThePlan(payload, id);
+
+    // Handle the server's response
+    console.log(response);
+  };
+
+  const handleContinue = async (id: number) => {
+    const payload = {
+      status: "CANCELLED",
+    };
+
+    // Make the server request
+    const response = await rescheduleThePlan(payload, id);
+
+    // Handle the server's response
+    console.log(response);
+  };
 
   const [formData, setFormData] = useState({
     activity: "",
@@ -234,7 +288,9 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
     });
   }
 
-  // console.log(reports);
+  function onReschedule(data: z.infer<typeof FormSchema>, reportId: string) {
+    console.log(data);
+  }
 
   return (
     <div className="p-4">
@@ -305,7 +361,8 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                       {report.scopes
                         ?.flatMap((scope) =>
                           scope.assignedTeamMembers?.map(
-                            (member) => member.email,
+                            (member) =>
+                              member.firstname + " " + member.lastname,
                           ),
                         )
                         .join(", ")}
@@ -455,7 +512,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                           </Sheet>
                         </div>
                         <div>
-                          <AlertDialog>
+                          {/* <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button size={"sm"} className="">
                                 <p className="hidden lg:block">Reschedule</p>
@@ -480,6 +537,80 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                                 <AlertDialogAction>Continue</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
+                          </AlertDialog> */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Reschedule</p>
+                                <TimerResetIcon
+                                  className="text-white"
+                                  size={10}
+                                />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="no-scrollbar h-96 overflow-y-auto">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Reschedule Ticket
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Pick a new date and select the status for the
+                                  ticket. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              {/* Date Picker */}
+
+                              <div className="">
+                                <Calendar
+                                  className=" "
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={setSelectedDate}
+                                  /*  disabled={(date) =>
+                                                  date > new Date() ||
+                                                  date < new Date("1900-01-01")
+                                                } */
+                                  initialFocus
+                                />
+                              </div>
+
+                              {/* Dropdown (Status Picker) */}
+                              <div className="mb-4">
+                                <label className="mb-1 block text-sm font-medium">
+                                  Select Status
+                                </label>
+                                <Select onValueChange={setStatus}>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="IN_PROGRESS">
+                                      In Progress
+                                    </SelectItem>
+                                    <SelectItem value="RESCHEDULED">
+                                      Rescheduled
+                                    </SelectItem>
+                                    <SelectItem value="COMPLETED">
+                                      Completed
+                                    </SelectItem>
+                                    <SelectItem value="CANCELLED">
+                                      Cancelled
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={!selectedDate && !status}
+                                  onClick={() => handleConfirm(report?.id)}
+                                >
+                                  Confirm
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
                           </AlertDialog>
                         </div>
                         <div>
@@ -502,7 +633,11 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                               </AlertDialogHeader>
                               <AlertDialogFooter>
                                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction>Continue</AlertDialogAction>
+                                <AlertDialogAction
+                                  onClick={() => handleContinue(report?.id)}
+                                >
+                                  Continue
+                                </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
                           </AlertDialog>

@@ -31,7 +31,9 @@ export async function RecentActivities() {
               <p className="text-sm text-muted-foreground">
                 {activity.scopes
                   ?.flatMap((scope) =>
-                    scope.assignedTeamMembers?.map((member) => member.email),
+                    scope.assignedTeamMembers?.map(
+                      (member) => member.firstname + " " + member.lastname,
+                    ),
                   )
                   .join(" - ")}
               </p>

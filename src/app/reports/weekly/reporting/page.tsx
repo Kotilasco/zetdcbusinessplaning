@@ -283,7 +283,7 @@ function WeeklyReport() {
                         {report.scopes
                           ?.flatMap((scope) =>
                             scope.assignedTeamMembers?.map(
-                              (member) => member.email,
+                              (member) => member.firstname + " " + member.lastname,
                             ),
                           )
                           .join(", ")}

@@ -34,6 +34,7 @@ import {
 import TaskDataVisualization from "@/components/TaskVisualization";
 import TaskPage from "@/app/tasks/TaskPage";
 import { getMemberById } from "@/app/actions/getTeamMembers";
+import OverdueTask from "@/app/tasks/OverdueTasks";
 
 export default async function MemberInfo({ params }: any) {
   const allStatuses = ["IN_PROGRESS", "COMPLETED", "PENDING", "CANCELLED"];
@@ -42,6 +43,8 @@ export default async function MemberInfo({ params }: any) {
   const colors = ["#8884d8", "#82ca9d", "#ffc658", "#ff6f61"];
   const data = await gettaskedGroupedByStatusForMember(params?.id);
   const member = await getMemberById(params?.id);
+
+  console.log(data);
 
   const completeData = allStatuses.map((status) => {
     const found = data.find((item) => item.status === status);
@@ -178,7 +181,17 @@ export default async function MemberInfo({ params }: any) {
           </Card>
         </div>
         <div className="">
+          <h1 className="text-md mt-4 text-center font-bold uppercase text-blue-400">
+            Tasks
+          </h1>
           <TaskPage id={params?.id} />
+        </div>
+
+        <div className="">
+          <h1 className="text-md mt-4 text-center font-bold uppercase text-blue-400">
+            Overdue Tasks
+          </h1>
+          <OverdueTask id={params?.id} />
         </div>
       </div>
     </DefaultLayout>

@@ -180,7 +180,7 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
                       {report.scopes
                         ?.flatMap((scope) =>
                           scope.assignedTeamMembers?.map(
-                            (member) => member.email,
+                            (member) => member.firstname + " " + member.lastname,
                           ),
                         )
                         .join(", ")}

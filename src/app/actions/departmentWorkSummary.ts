@@ -4,6 +4,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { auth, signOut } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { UserRoles } from "@/next-auth.d";
 
 export async function getDepartmentWorkSummary() {
   const session = await auth();
@@ -20,11 +21,24 @@ export async function getDepartmentWorkSummary() {
 
   console.log(session);
 
+  let url;
+
+  if(session?.user?.role === UserRoles.ROLE_MANAGER){
+    url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.sectionId}`
+  }
+  else{
+    url = `${baseUrl}/api/plans/workplans/summary/department/${session?.user?.departmentId}`
+  }
+
+  if(session?.user.role === UserRoles.ROLE_ADMIN){
+url = `${baseUrl}/api/plans/workplans/summary/department/1`
+  }
+
   try {
     console.log("Fetching summary...");
     ///api/teamMembers/department/{departmentId}
     const response = await fetch(
-      `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.sectionId}`,
+      url,
       {
         method: "GET",
         headers: {

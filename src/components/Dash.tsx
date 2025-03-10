@@ -32,6 +32,11 @@ import { Suspense } from "react";
 import { Members } from "./AdminDashboard/Members";
 import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
 import { processTaskData } from "@/lib/utils/processData";
+import { getDepartmentWorkSummary } from "@/app/actions/departmentWorkSummary";
+import Summary from "@/app/reports/yearly/graphs/summary";
+import BarCHart from "./DashboardGraphs/BarChart";
+import PieGraph from "./DashboardGraphs/PieChart";
+import LineGraph from "./DashboardGraphs/LineCHart";
 
 // Simulate a server-side data fetch (replace with your actual fetch logic)
 async function fetchRevenueData() {
@@ -47,7 +52,13 @@ export const metadata: Metadata = {
 
 const rev = await getAllWorkPlansBySection();
 
+console.log('jjjjsssss')
+console.log(rev)
+
 const revenueData = processTaskData(rev);
+
+console.log("kkkkkkeeeeee")
+console.log(revenueData);
 
 function SkeletonLoader() {
   return (
@@ -79,6 +90,7 @@ async function RevenueData({
 export default async function DashboardPage() {
   const role = await currentRole();
   const revenueDataPromise = fetchRevenueData();
+  const departmentData = await getDepartmentWorkSummary();
 
   return (
     <>
@@ -233,7 +245,7 @@ export default async function DashboardPage() {
                         <p>Section Team Members</p>
                       )}
 
-                      {role && hasPermission([role], "view:deptmembers") && (
+                      {role && hasPermission([role], "view:department") && (
                         <p>Department Team Members</p>
                       )}
                     </CardTitle>
@@ -245,7 +257,7 @@ export default async function DashboardPage() {
                     {role && hasPermission([role], "view:members") && (
                       <Members />
                     )}
-                    {role && hasPermission([role], "view:deptmembers") && (
+                    {role && hasPermission([role], "view:department") && (
                       <Members />
                     )}
                   </CardContent>
@@ -371,6 +383,39 @@ export default async function DashboardPage() {
                     <p className="text-xs text-muted-foreground">
                       Number of completed tasks
                     </p>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+                <Card className="col-span-8">
+                  <CardHeader>
+                    <CardTitle>Bar Chart</CardTitle>
+                    <CardDescription>Overview</CardDescription>
+                  </CardHeader>
+                  <CardContent className="pl-2">
+                    <BarCHart departmentData={departmentData} />
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+                <Card className="col-span-8">
+                  <CardHeader>
+                    <CardTitle>Pie Chart</CardTitle>
+                    {/* <CardDescription>The departments present</CardDescription> */}
+                  </CardHeader>
+                  <CardContent className="pl-2">
+                    <PieGraph departmentData={departmentData} />
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-8">
+                <Card className="col-span-8">
+                  <CardHeader>
+                    <CardTitle>Line Graph</CardTitle>
+                    {/*  <CardDescription>The departments present</CardDescription> */}
+                  </CardHeader>
+                  <CardContent className="pl-2">
+                    <LineGraph departmentData={departmentData} />
                   </CardContent>
                 </Card>
               </div>

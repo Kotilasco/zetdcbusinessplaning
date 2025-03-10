@@ -24,13 +24,15 @@ export async function getWorkplansForYearAndQuarterByStatus(
    console.log(data)
 
   try {
-    console.log("hello here we are");
+    console.log("hello here we are!!!!");
 
-    let url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.yearyear}/departmentId/${session?.user?.departmentId}/quarter/${data.quarter}/status/${data.status}`;
+    let url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.year}/departmentId/${session?.user?.departmentId}/quarter/${data.quarter}/status/${data.status}`;
 
     if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
       url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.year}/departmentId/${session?.user?.departmentId}/quarter/${data.quarter}/status/${data.status}`;
     }
+
+
 
     const response = await fetch(url, {
       method: "GET",

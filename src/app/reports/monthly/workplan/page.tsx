@@ -241,7 +241,7 @@ export default function SelectForm() {
                       {plan.scopes
                         ?.flatMap((scope) =>
                           scope.assignedTeamMembers?.map(
-                            (member) => member.email,
+                            (member) => member.firstname + " " + member.lastname,
                           ),
                         )
                         .join(" - ")}

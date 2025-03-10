@@ -66,6 +66,12 @@ export async function getAllWorkPlansBySection() {
         if(session?.user.role === UserRoles.ROLE_SENIORMANAGER){
             url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.departmentId}`
                     }
+
+        if(session?.user.role === UserRoles.ROLE_ADMIN){
+            url = `${process.env.BASE_URL}/api/plans/findAll`
+        }
+
+        console.log(url)
        
         const response = await fetch(
             url,
