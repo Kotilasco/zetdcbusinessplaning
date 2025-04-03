@@ -63,9 +63,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { MONTHS, WEEKS } from "@/data/constants";
+import { CURRENCY, MONTHS, WEEKS } from "@/data/constants";
 import {
   CalendarIcon,
+  Currency,
   Delete,
   Pencil,
   PlusIcon,
@@ -90,6 +91,12 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { rescheduleThePlan } from "@/app/actions/rescheduleTask";
+import { getWeeklyExpenditureComparison } from "@/app/actions/expenditureComparison";
+import StackedBarChart from "@/components/DashboardGraphs/StackedBarChart";
+import BudgetPieChart from "@/components/DashboardGraphs/WeeklyPieChart";
+import BudgetUsageGauge from "@/components/DashboardGraphs/WeeklyGuageChart";
+import WeeklyExpenditureBarChart from "@/components/DashboardGraphs/MonthlyBarChart";
+import WeeklyBudgetDonutChart from "@/components/DashboardGraphs/WeeklyDonutChart";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -120,16 +127,13 @@ export const FormSchema = z.object({
       required_error: "Please enter actual work done.",
     }),
   ),
-  percentageComplete: z.preprocess(
+  currency: z.string().min(1, {
+    message: "currency should be of length greater than 1",
+  }),
+  budget: z.preprocess(
     (val) => (val !== "" ? Number(val) : undefined),
     z.number({
-      required_error: "Please enter completed percentage.",
-    }),
-  ),
-  budgetPercentage: z.preprocess(
-    (val) => (val !== "" ? Number(val) : undefined),
-    z.number({
-      required_error: "Please enter completed percentage.",
+      required_error: "Please enter budget being used.",
     }),
   ),
   actualExpenditure: z.preprocess(
@@ -161,10 +165,19 @@ interface WeeklyTableProps {
   month: string;
 
   week: string;
+
+  currency?: string;
 }
 
-const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
+const WeeklyReport: React.FC<WeeklyTableProps> = ({
+  year,
+  month,
+  week,
+  currency,
+}) => {
   const [reports, setReports] = useState([]);
+
+  const [pieData, setPieData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -206,7 +219,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
     actualWorkDone: 0,
     percentageComplete: 0,
     actualExpenditure: 0,
-    budgetPercentage: 0,
+    budget: 0,
     remarks: "",
   });
 
@@ -251,7 +264,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
       actualWorkDone: 0,
       percentageComplete: 0,
       actualExpenditure: 0,
-      budgetPercentage: 0,
+      budget: 0,
       remarks: "",
     });
   };
@@ -261,6 +274,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
     const fetchData = async () => {
       try {
         const response = await getAllWorkPlansFilter({ year, month, week });
+
         console.log("jjjjjj");
         setReports(response);
       } catch (error: any) {
@@ -272,6 +286,29 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
 
     fetchData();
   }, [submitted, year, month, week]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const pieData = await getWeeklyExpenditureComparison({
+          year,
+          month,
+          week,
+          currency,
+        });
+
+        console.log(pieData);
+        setPieData(pieData);
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted, year, month, week, currency]);
 
   function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
     //console.log(data);
@@ -295,7 +332,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
-      <div className="no-scrollbar overflow-x-auto">
+      <div className="no-scrollbar mb-5 overflow-x-auto">
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-black text-white">
             <tr>
@@ -367,9 +404,16 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                         )
                         .join(", ")}
                     </td>
-                    <td className="border p-2">{report.percentageComplete}</td>
-                    <td className="border p-2">{report.actualExpenditure}</td>
-                    <td className="border p-2">{report.percentOfBudget}</td>
+                    <td className="border p-2">
+                      {" "}
+                      {parseFloat(report.percentageComplete.toFixed(2))}
+                    </td>
+                    <td className="border p-2">
+                      {report.actualExpenditure} {report.currency}
+                    </td>
+                    <td className="border p-2">
+                      {report.percentOfBudget?.toFixed(2)}
+                    </td>
                     <td className="border p-2">{report.remarks}</td>
                     {role && hasPermission([role], "update:report") && (
                       <td className="flex items-center justify-around space-x-1 border p-2">
@@ -419,6 +463,38 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
 
                                   <FormField
                                     control={form.control}
+                                    name="currency"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Currency</FormLabel>
+                                        <Select
+                                          onValueChange={field.onChange}
+                                          defaultValue={field.value}
+                                        >
+                                          <FormControl>
+                                            <SelectTrigger>
+                                              <SelectValue placeholder="Select a valid currency" />
+                                            </SelectTrigger>
+                                          </FormControl>
+                                          <SelectContent>
+                                            {CURRENCY.map((curr) => (
+                                              <SelectItem
+                                                key={curr.value}
+                                                value={curr.value}
+                                              >
+                                                {curr.label}
+                                              </SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  {/*  <FormField
+                                    control={form.control}
                                     name="percentageComplete"
                                     render={({ field }) => (
                                       <FormItem>
@@ -436,21 +512,19 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                                         <FormMessage />
                                       </FormItem>
                                     )}
-                                  />
+                                  /> */}
 
                                   <FormField
                                     control={form.control}
-                                    name="budgetPercentage"
+                                    name="budget"
                                     render={({ field }) => (
                                       <FormItem>
-                                        <FormLabel>Budget Percentage</FormLabel>
+                                        <FormLabel>Budget To Use</FormLabel>
                                         <Input
                                           placeholder="Enter budget percentage"
                                           type="number"
                                           {...field}
-                                          defaultValue={
-                                            report.budgetPercentage || 0
-                                          }
+                                          defaultValue={report.budget || 0}
                                         />
                                         <FormMessage />
                                       </FormItem>
@@ -648,6 +722,30 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({ year, month, week }) => {
                 ))}
           </tbody>
         </table>
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-96 w-full p-2">
+        <h2>Comparing expenditure and budget</h2>
+        <StackedBarChart data={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 w-full p-2">
+        <h2>Comparing expenditure and budget</h2>
+        <BudgetPieChart data={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-96 w-full p-2">
+        <h2>Percent of Budget Used</h2>
+        <BudgetUsageGauge data={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-96 w-full p-2">
+        <h2> Expenditure vs Remaining Budget</h2>
+        <WeeklyBudgetDonutChart data={pieData} />
       </div>
     </div>
   );

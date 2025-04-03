@@ -18,6 +18,11 @@ export async function RecentActivities() {
   }
 
   // console.log(activities);
+  //activities = activities.slice(0, 5);
+  // Assuming activities is an array of objects with a field "updatedAt"
+  activities = activities
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    .slice(0, 5);
 
   return (
     <div className="space-y-8">

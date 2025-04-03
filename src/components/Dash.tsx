@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import { Metadata } from "next";
 import Image from "next/image";
 
@@ -35,8 +37,17 @@ import { processTaskData } from "@/lib/utils/processData";
 import { getDepartmentWorkSummary } from "@/app/actions/departmentWorkSummary";
 import Summary from "@/app/reports/yearly/graphs/summary";
 import BarCHart from "./DashboardGraphs/BarChart";
+import Link from "next/link";
 import PieGraph from "./DashboardGraphs/PieChart";
 import LineGraph from "./DashboardGraphs/LineCHart";
+import LineChartComponent from "./DashboardGraphs/AllLines";
+import DepartmentPieChart from "./DashboardGraphs/DepartmentPieChart";
+import OverdueTable from "./AdminDashboard/DepartmentOverdueTasks";
+import DeptOverdue from "./DeptOverdue";
+import StackedBarChart from "./DashboardGraphs/StackedBarChart";
+import { getPieDataForOverdueDeptTasks } from "@/app/actions/getOverdueTaskForDepartment";
+import DashboardWithFilters from "./DashboardGraphs/DashboardWithFilters";
+import Landing from "./DashboardGraphs/Landing";
 
 // Simulate a server-side data fetch (replace with your actual fetch logic)
 async function fetchRevenueData() {
@@ -47,18 +58,13 @@ async function fetchRevenueData() {
 
 export const metadata: Metadata = {
   title: "Dashboard",
-  description: "Customer Supplied Materials Scheme System's dashboard.",
+  description: "Zetdc Performance Reporting System",
 };
+
 
 const rev = await getAllWorkPlansBySection();
 
-console.log('jjjjsssss')
-console.log(rev)
-
 const revenueData = processTaskData(rev);
-
-console.log("kkkkkkeeeeee")
-console.log(revenueData);
 
 function SkeletonLoader() {
   return (
@@ -78,7 +84,6 @@ async function RevenueData({
     statusCounts: { [key: string]: number };
   }>;
 }) {
-  console.log(revenueData);
   return (
     <div>
       <div className="text-2xl font-bold">{revenueData.totalExpenditure}</div>
@@ -92,29 +97,16 @@ export default async function DashboardPage() {
   const revenueDataPromise = fetchRevenueData();
   const departmentData = await getDepartmentWorkSummary();
 
+  let pieData;
+
+  role === UserRoles.ROLE_SENIORMANAGER &&
+    (pieData = await getPieDataForOverdueDeptTasks());
+  console.log(pieData);
+
   return (
     <>
       <div className=" flex-col md:flex">
-        <div className="border-b">
-          <div className="flex h-16 items-center px-4">
-            <div className="hidden md:block"></div>
-
-            <MainNav className="mx-6" />
-
-            <div className="ml-auto flex items-center space-x-4">
-              <Search />
-              <UserNav />
-            </div>
-          </div>
-        </div>
         <div className="flex-1 space-y-4 p-8 pt-6">
-          <div className="hidden items-center justify-between space-y-2 md:flex">
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <div className="flex items-center space-x-2">
-              <CalendarDateRangePicker />
-              <Button>Print Report</Button>
-            </div>
-          </div>
           <Tabs defaultValue="overview" className="space-y-4 px-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -131,113 +123,10 @@ export default async function DashboardPage() {
               )}
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
-              {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Total Users
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">$45,231.89</div>
-                    <p className="text-xs text-muted-foreground">
-                      +20.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Subscriptions
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                      <circle cx="9" cy="7" r="4" />
-                      <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+2350</div>
-                    <p className="text-xs text-muted-foreground">
-                      +180.1% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Sales</CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <rect width="20" height="14" x="2" y="5" rx="2" />
-                      <path d="M2 10h20" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+12,234</div>
-                    <p className="text-xs text-muted-foreground">
-                      +19% from last month
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Active Now
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">+573</div>
-                    <p className="text-xs text-muted-foreground">
-                      +201 since last hour
-                    </p>
-                  </CardContent>
-                </Card>
-              </div> */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
+              <div className="grid gap-4 ">
                 <Card className="col-span-4">
                   <CardHeader>
-                    <CardTitle>
+                    {/* <CardTitle>
                       {role && hasPermission([role], "create:department") && (
                         <p>Create Department</p>
                       )}
@@ -248,10 +137,10 @@ export default async function DashboardPage() {
                       {role && hasPermission([role], "view:department") && (
                         <p>Department Team Members</p>
                       )}
-                    </CardTitle>
+                    </CardTitle> */}
                   </CardHeader>
                   <CardContent className="pl-2">
-                    {role && hasPermission([role], "create:department") && (
+                    {/*  {role && hasPermission([role], "create:department") && (
                       <DepartmentCreationForm />
                     )}
                     {role && hasPermission([role], "view:members") && (
@@ -259,10 +148,12 @@ export default async function DashboardPage() {
                     )}
                     {role && hasPermission([role], "view:department") && (
                       <Members />
-                    )}
+                    )} */}
+
+                    <Landing />
                   </CardContent>
                 </Card>
-                <Card className="col-span-4">
+                {/* <Card className="col-span-4">
                   <CardHeader>
                     <CardTitle>Recent Activities</CardTitle>
                     <CardDescription>
@@ -272,7 +163,7 @@ export default async function DashboardPage() {
                   <CardContent>
                     <RecentActivities />
                   </CardContent>
-                </Card>
+                </Card> */}
               </div>
             </TabsContent>
             <TabsContent value="analytics" className="space-y-4">
@@ -302,7 +193,7 @@ export default async function DashboardPage() {
                     </Suspense>
                   </CardContent>
                 </Card>
-                <Card>
+                {/* <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Overdue Tasks
@@ -329,6 +220,36 @@ export default async function DashboardPage() {
                       Number of tasks past the due date
                     </p>
                   </CardContent>
+                </Card> */}
+                <Card>
+                  <Link href="/tasks/overdue">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Overdue Tasks
+                      </CardTitle>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        className="h-4 w-4 text-muted-foreground"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 6v6l4 2" />
+                      </svg>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        +{revenueData?.overdueCount}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Number of tasks past the due date
+                      </p>
+                    </CardContent>
+                  </Link>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -419,6 +340,21 @@ export default async function DashboardPage() {
                   </CardContent>
                 </Card>
               </div>
+              {role && hasPermission([role], "view:department") && (
+                <div className="grid md:grid-cols-2 lg:grid-cols-8">
+                  <Card className="col-span-8">
+                    <CardHeader>
+                      <CardTitle>
+                        Comparison of overdue department tasks
+                      </CardTitle>
+                      {/*  <CardDescription>The departments present</CardDescription> */}
+                    </CardHeader>
+                    <CardContent className="pl-2">
+                      <DepartmentPieChart pieData={pieData} />
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
             </TabsContent>
             <TabsContent value="reports" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">
@@ -445,6 +381,17 @@ export default async function DashboardPage() {
                     <RecentActivities />
                   </CardContent>
                 </Card>
+                {/*  <Card className="col-span-4">
+                  <CardHeader>
+                    <CardTitle>Overdue tasks</CardTitle>
+                    <CardDescription>
+                      The overdue tasks for your department
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    
+                  </CardContent>
+                </Card> */}
               </div>
             </TabsContent>
             <TabsContent value="create" className="space-y-4">

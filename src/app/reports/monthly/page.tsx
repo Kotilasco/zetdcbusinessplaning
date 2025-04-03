@@ -5,6 +5,7 @@ import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { SelectReport } from "@/components/Reports/IRBMQuarter";
+import { Monthly } from "@/components/Reports/Monthly";
 
 /* export const metadata: Metadata = {
   title: "Next.js MonthlyReports Page | NextAdmin - Next.js Dashboard c",
@@ -19,7 +20,7 @@ const MonthlyReports = () => {
       <div className="mx-auto w-full max-w-[1080px]">
         <Breadcrumb page="Reports" pageName="Monthly" />
         
-        <SelectReport type='monthly' />
+        <Monthly />
         
       </div>
     </DefaultLayout>

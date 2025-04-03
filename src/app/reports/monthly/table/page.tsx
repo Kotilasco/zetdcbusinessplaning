@@ -1,0 +1,742 @@
+//@ts-nocheck
+"use client";
+
+import React, { useState, useEffect, useTransition } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { MONTHS, WEEKS } from "@/data/constants";
+import {
+  CalendarIcon,
+  Delete,
+  Pencil,
+  PlusIcon,
+  TimerResetIcon,
+} from "lucide-react";
+import DefaultLayout from "@/components/Layouts/DefaultLaout";
+import { getAllWorkPlans } from "@/app/actions/getWorkPlans";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { updateWeeklyReport } from "@/app/actions/updateWeeklyReport";
+import { getAllWorkPlansFilter } from "@/app/actions/getWorkPlansFilter";
+import { hasPermission } from "@/permissions";
+import { currentRole } from "@/lib/auth";
+import { useCurrentRole } from "@/hooks/use-current-role";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { rescheduleThePlan } from "@/app/actions/rescheduleTask";
+import { getWeeklyExpenditureComparison } from "@/app/actions/expenditureComparison";
+import StackedBarChart from "@/components/DashboardGraphs/StackedBarChart";
+import BudgetPieChart from "@/components/DashboardGraphs/WeeklyPieChart";
+import MonthlyLineGraph from "@/components/DashboardGraphs/MonthlyLineChart";
+import MonthlyBudgetAllocationPieChart from "@/components/DashboardGraphs/MonthlyPieChart";
+import CumulativeExpenditureAreaChart from "@/components/DashboardGraphs/MonthlyAreaChart";
+import BudgetMetricsRadarChart from "@/components/DashboardGraphs/MonthlyRadarChart";
+import WeeklyExpenditureBarChart from "@/components/DashboardGraphs/MonthlyBarChart";
+import WeeklyBudgetLineChart from "@/components/DashboardGraphs/WeeklyLineChart";
+
+/* export const FormSchema = z.object({
+  weeklyTarget: z.number({
+    required_error: "Please input a weekly target",
+  }),
+  actualWorkDone: z.number({
+    required_error: "Please enter actual work done.",
+  }),
+  percentageComplete: z.number({
+    required_error: "Please enter completed percentage.",
+  }),
+  budgetPercentage: z.number({
+    required_error: "Please enter completed percentage.",
+  }),
+  actualExpenditure: z.number({
+    required_error: "Please enter completed percentage.",
+  }),
+  remarks: z.string().min(2, {
+    message: "remarks should be of length greaer than 2",
+  }),
+});
+ */
+
+export const FormSchema = z.object({
+  actualWorkDone: z.preprocess(
+    (val) => (val !== "" ? Number(val) : undefined),
+    z.number({
+      required_error: "Please enter actual work done.",
+    }),
+  ),
+  percentageComplete: z.preprocess(
+    (val) => (val !== "" ? Number(val) : undefined),
+    z.number({
+      required_error: "Please enter completed percentage.",
+    }),
+  ),
+  budgetPercentage: z.preprocess(
+    (val) => (val !== "" ? Number(val) : undefined),
+    z.number({
+      required_error: "Please enter completed percentage.",
+    }),
+  ),
+  actualExpenditure: z.preprocess(
+    (val) => (val !== "" ? Number(val) : undefined),
+    z.number({
+      required_error: "Please enter completed percentage.",
+    }),
+  ),
+  remarks: z.string().min(2, {
+    message: "remarks should be of length greater than 2",
+  }),
+  reportId: z.number().optional(),
+});
+
+export const RescheduleSchema = z.object({
+  rescheduledDate: z.date({
+    required_error: "Please select a date",
+  }),
+  status: z.enum(["IN_PROGRESS", "COMPLETED", "CANCELLED", "RESCHEDULED"]),
+});
+
+const SHEET_SIDES = ["right"] as const;
+
+type SheetSide = (typeof SHEET_SIDES)[number];
+
+interface WeeklyTableProps {
+  year: string;
+
+  month: string;
+
+  week: string;
+
+  currency?: string;
+}
+
+const WeeklyReport: React.FC<MonthlyTableProps> = ({
+  year,
+  month,
+  currency,
+}) => {
+  const [reports, setReports] = useState([]);
+
+  const [pieData, setPieData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // State for date picker
+  const [status, setStatus] = useState(""); // State for dropdown status
+
+  const handleConfirm = async (id: number) => {
+    console.log(id);
+    console.log("Selected Date:", selectedDate);
+    console.log("Selected Status:", status);
+    // Perform your rescheduling logic here
+
+    const payload = {
+      targetCompletionDate: selectedDate,
+      status,
+    };
+
+    // Make the server request
+    const response = await rescheduleThePlan(payload, id);
+
+    // Handle the server's response
+    console.log(response);
+  };
+
+  const handleContinue = async (id: number) => {
+    const payload = {
+      status: "CANCELLED",
+    };
+
+    // Make the server request
+    const response = await rescheduleThePlan(payload, id);
+
+    // Handle the server's response
+    console.log(response);
+  };
+
+  const [formData, setFormData] = useState({
+    activity: "",
+    actualWorkDone: 0,
+    percentageComplete: 0,
+    actualExpenditure: 0,
+    budgetPercentage: 0,
+    remarks: "",
+  });
+
+  /* const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  }; */
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {},
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, options } = e.target;
+
+    if (type === "select-multiple") {
+      // Handle multi-select logic for teamMembers
+      const selectedValues = Array.from(options)
+        .filter((option) => option.selected)
+        .map((option) => option.value);
+      setFormData({ ...formData, [name]: selectedValues });
+    } else {
+      // Handle other input fields
+      setFormData({ ...formData, [name]: value });
+    }
+  };
+
+  const teamMembers = [
+    { id: 1, name: "Alice" },
+    { id: 2, name: "Bob" },
+    { id: 3, name: "Charlie" },
+    { id: 4, name: "Diana" },
+  ];
+
+  const role = useCurrentRole();
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setReports([...reports, formData]);
+    setFormData({
+      actualWorkDone: 0,
+      percentageComplete: 0,
+      actualExpenditure: 0,
+      budgetPercentage: 0,
+      remarks: "",
+    });
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const weeks = ["week1", "week2", "week3", "week4"]; // Add all the weeks you need
+
+        const response = await Promise.all(
+          weeks.map(async (week) => {
+            return await getAllWorkPlansFilter({ year, month, week });
+          }),
+        );
+        console.log(response.flat());
+        setReports(response.flat());
+      } catch (error: any) {
+        console.log("");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted, year, month]);
+
+  console.log(reports);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const weeks = ["week1", "week2", "week3", "week4"]; // Add all the weeks you need
+
+        const pieData = await Promise.all(
+          weeks.map(async (week) => {
+            return await getWeeklyExpenditureComparison({
+              year,
+              month,
+              week,
+              currency,
+            });
+          }),
+        );
+
+        console.log(pieData.flat());
+        setPieData(pieData.flat());
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted, year, month, currency]);
+
+  function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
+    //console.log(data);
+    startTransition(async () => {
+      await updateWeeklyReport({ ...data, reportId })
+        .then((res) => {
+          //   console.log(res);
+          setSubmitted((prev) => !prev);
+        })
+        .catch((err) => {
+          console.log("");
+          throw new Error(err.message);
+        });
+    });
+  }
+
+  function onReschedule(data: z.infer<typeof FormSchema>, reportId: string) {
+    console.log(data);
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
+      <div className="no-scrollbar mb-5 overflow-x-auto">
+        <table className="w-full border-collapse border border-gray-300">
+          <thead className="bg-black text-white">
+            <tr>
+              <th className="border p-2">Activity</th>
+              <th className="border p-2">Weekly Target</th>
+              <th className="border p-2">Actual Work Done</th>
+              <th className="border p-2">Team Members</th>
+              <th className="border p-2">Percentage Complete</th>
+              <th className="border p-2">Actual Expenditure</th>
+              <th className="border p-2">% of Budget</th>
+              <th className="border p-2">Remarks</th>
+              {role && hasPermission([role], "update:report") && (
+                <th className="border p-2">Actions</th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {isLoading
+              ? // Display skeleton loader rows
+                Array.from({ length: 5 }).map((_, index) => (
+                  <tr key={index} className="border">
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    <td className="border p-2">
+                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                    </td>
+                    {role && hasPermission([role], "update:report") && (
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              : // Display actual data rows
+                reports?.map((report, index) => (
+                  <tr key={index} className="border">
+                    <td className="border p-2">
+                      {report.scopes?.map((scope) => scope.details).join(", ")}
+                    </td>
+                    <td className="border p-2">{report.weeklyTarget}</td>
+                    <td className="border p-2">{report.actualWorkDone}</td>
+                    <td className="border p-2">
+                      {" "}
+                      {report.scopes
+                        ?.flatMap((scope) =>
+                          scope.assignedTeamMembers?.map(
+                            (member) =>
+                              member.firstname + " " + member.lastname,
+                          ),
+                        )
+                        .join(", ")}
+                    </td>
+                    <td className="border p-2">{report.percentageComplete}</td>
+                    <td className="border p-2">{report.actualExpenditure}</td>
+                    <td className="border p-2">{report.percentOfBudget}</td>
+                    <td className="border p-2">{report.remarks}</td>
+                    {role && hasPermission([role], "update:report") && (
+                      <td className="flex items-center justify-around space-x-1 border p-2">
+                        <div className="">
+                          <Sheet>
+                            <SheetTrigger asChild>
+                              <Button size={"sm"}>
+                                <p className="hidden lg:block">Edit</p>
+                                <Pencil size={10} className="text-white" />
+                              </Button>
+                            </SheetTrigger>
+                            <SheetContent
+                              side="right"
+                              className="no-scrollbar h-full overflow-y-auto"
+                            >
+                              <SheetHeader>
+                                <SheetTitle>Add Work Plan</SheetTitle>
+                                <SheetDescription>
+                                  Add a work plan for a particular month.
+                                </SheetDescription>
+                              </SheetHeader>
+                              <Form {...form}>
+                                <form
+                                  onSubmit={form.handleSubmit((data) =>
+                                    onSubmit(data, report.id),
+                                  )}
+                                  className="mb-6 grid gap-4 py-4"
+                                >
+                                  <FormField
+                                    control={form.control}
+                                    name="actualWorkDone"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Actual Work Done</FormLabel>
+                                        <Input
+                                          placeholder="Enter Actual Work Done"
+                                          type="number"
+                                          {...field}
+                                          defaultValue={
+                                            report.actualWorkDone || 0
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="percentageComplete"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>
+                                          Percentage completed
+                                        </FormLabel>
+                                        <Input
+                                          placeholder="Enter percentage completed"
+                                          type="number"
+                                          {...field}
+                                          defaultValue={
+                                            report.percentageComplete || 0
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="budgetPercentage"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Budget Percentage</FormLabel>
+                                        <Input
+                                          placeholder="Enter budget percentage"
+                                          type="number"
+                                          {...field}
+                                          defaultValue={
+                                            report.budgetPercentage || 0
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="actualExpenditure"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>
+                                          Actual Expenditure
+                                        </FormLabel>
+                                        <Input
+                                          placeholder="Enter actual expenditure"
+                                          type="number"
+                                          {...field}
+                                          defaultValue={
+                                            report.actualExpenditure || 0
+                                          }
+                                        />
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+
+                                  <FormField
+                                    control={form.control}
+                                    name="remarks"
+                                    render={({ field }) => (
+                                      <FormItem>
+                                        <FormLabel>Remarks</FormLabel>
+                                        <FormControl>
+                                          <Textarea
+                                            placeholder="Write the scope to be performed"
+                                            className="resize-none"
+                                            defaultValue={report.remarks || ""}
+                                            {...field}
+                                          />
+                                        </FormControl>
+
+                                        <FormMessage />
+                                      </FormItem>
+                                    )}
+                                  />
+                                  <Button disabled={isPending} type="submit">
+                                    Submit
+                                  </Button>
+                                </form>
+                              </Form>
+
+                              <SheetFooter>
+                                <SheetClose asChild>
+                                  <Button hidden>Close</Button>
+                                </SheetClose>
+                              </SheetFooter>
+                            </SheetContent>
+                          </Sheet>
+                        </div>
+                        <div>
+                          {/* <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Reschedule</p>
+                                <TimerResetIcon
+                                  className="text-white"
+                                  size={10}
+                                />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently reschedule the ticket.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction>Continue</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog> */}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Reschedule</p>
+                                <TimerResetIcon
+                                  className="text-white"
+                                  size={10}
+                                />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="no-scrollbar h-96 overflow-y-auto">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Reschedule Ticket
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Pick a new date and select the status for the
+                                  ticket. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+
+                              {/* Date Picker */}
+
+                              <div className="">
+                                <Calendar
+                                  className=" "
+                                  mode="single"
+                                  selected={selectedDate}
+                                  onSelect={setSelectedDate}
+                                  /*  disabled={(date) =>
+                                                  date > new Date() ||
+                                                  date < new Date("1900-01-01")
+                                                } */
+                                  initialFocus
+                                />
+                              </div>
+
+                              {/* Dropdown (Status Picker) */}
+                              <div className="mb-4">
+                                <label className="mb-1 block text-sm font-medium">
+                                  Select Status
+                                </label>
+                                <Select onValueChange={setStatus}>
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Select status" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="IN_PROGRESS">
+                                      In Progress
+                                    </SelectItem>
+                                    <SelectItem value="RESCHEDULED">
+                                      Rescheduled
+                                    </SelectItem>
+                                    <SelectItem value="COMPLETED">
+                                      Completed
+                                    </SelectItem>
+                                    <SelectItem value="CANCELLED">
+                                      Cancelled
+                                    </SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  disabled={!selectedDate && !status}
+                                  onClick={() => handleConfirm(report?.id)}
+                                >
+                                  Confirm
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                        <div>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size={"sm"} className="">
+                                <p className="hidden lg:block">Cancel</p>
+                                <Delete className="text-white" size={10} />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently cancel you the ticket.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleContinue(report?.id)}
+                                >
+                                  Continue
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+          </tbody>
+        </table>
+      </div>
+
+      <hr />
+      {/* <div className="mx-auto my-4 p-2 ">
+        <h2>Comparing expenditure and budget</h2>
+        <StackedBarChart data={pieData} />
+      </div> */}
+
+      <hr />
+      <div className="mx-auto my-4 p-2 ">
+        <h2>Progression of Budget Usage</h2>
+        <MonthlyLineGraph monthlyData={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-[30rem] w-full p-2">
+        <h2>Budget Allocation per Week</h2>
+        <MonthlyBudgetAllocationPieChart monthlyData={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-[30rem] w-full p-2">
+        <h2>Cumulative Expenditure Over Weeks</h2>
+        <CumulativeExpenditureAreaChart data={pieData} />
+      </div>
+
+      <hr />
+      <div className="mx-auto my-4 h-[30rem] w-full p-2">
+        <h2>Budget Usage Metrics</h2>
+        <BudgetMetricsRadarChart data={pieData} />
+      </div>
+
+      
+    </div>
+  );
+};
+
+export default WeeklyReport;

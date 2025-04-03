@@ -31,7 +31,7 @@ export const Header = ({ label }: HeaderProps) => {
             font.className
           )}
         >
-          ZETDC BUSINESS PLANNING
+          ZETDC Performance Reporting System
         </h1>
       </div>
 

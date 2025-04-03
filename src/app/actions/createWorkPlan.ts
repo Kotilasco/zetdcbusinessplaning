@@ -27,11 +27,17 @@ export async function createWorkPlan(workplan: WorkPlan) {
       "targetCompletionDate": "2025-02-18T20:00:43.230Z",
       "actualCompletionDate": "2025-02-18T20:00:43.230Z",
     */
+
     const wp = {
         "month": workplan.month,
         "week": workplan.week,
         "year": workplan.year,
   "weeklyTarget": workplan.weeklyTarget,
+  "actualWorkDone": 0,
+  "percentageComplete": 0,
+  "actualExpenditure": 0,
+  "percentOfBudget": 0,
+  "status": "IN_PROGRESS",
   "sectionId": session?.user?.sectionId,
   "departmentId": session?.user?.departmentId,
         "scopes": [

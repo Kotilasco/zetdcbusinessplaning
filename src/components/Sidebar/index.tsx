@@ -7,6 +7,7 @@ import Image from "next/image";
 import SidebarItem from "@/components/Sidebar/SidebarItem";
 import ClickOutside from "@/components/ClickOutside";
 import useLocalStorage from "@/hooks/useLocalStorage";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -120,6 +121,7 @@ const menuGroups = [
           { label: "Monthly", route: "/reports/monthly" },
           { label: "Quarterly", route: "/reports/quarterly" },
           { label: "Yearly", route: "/reports/yearly" },
+          { label: "Overdue", route: "/reports/overdue" },
         ],
       },
       {
@@ -249,9 +251,9 @@ const menuGroups = [
             />
           </svg>
         ),
-        label: "Charts",
+        label: "Graphs",
         route: "#",
-        children: [{ label: "Basic Chart", route: "/charts/basic-chart" }],
+        children: [{ label: "Yearly", route: "/graphs/year" }],
       },
       /*  {
         icon: (
@@ -327,6 +329,7 @@ const menuGroups = [
 ];
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
+  const user = useCurrentUser();
   const pathname = usePathname();
 
   const [pageName, setPageName] = useLocalStorage("selectedMenu", "dashboard");

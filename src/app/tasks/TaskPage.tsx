@@ -51,7 +51,7 @@ async function getTasks(id: any) {
     return {
       id: task.id?.toString() || "N/A",
       title: task.details || "No title provided",
-      status: task.status.toLowerCase(), // Convert status to lowercase
+      status: task?.status?.toLowerCase() || "in_progress", // Convert status to lowercase
       label: "documentation", // Static value (can be dynamic if needed)
       priority, // Use the calculated priority
     };

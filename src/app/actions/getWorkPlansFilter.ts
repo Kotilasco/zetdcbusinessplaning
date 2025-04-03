@@ -58,7 +58,7 @@ export async function getAllWorkPlansFilter(data: WeeklyTableProps) {
    // console.log(session)
 
     try {
-        console.log("hello filtering");
+       // console.log("hello filtering");
         // /api/plans/findBy/{sectionId}/{week}/{month}/{year}
 
         let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/${data.week}/${data.month}/${data.year}`
@@ -82,7 +82,7 @@ url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.de
         if (response.ok) {
             console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-          //  console.log(app);
+            console.log(app);
             return app;
         }
     } catch (error: any) {

@@ -27,7 +27,7 @@ import { MONTHS, QUARTERS } from "@/data/constants";
   label: string;
 } */
 
-const years = Array.from({ length: 1 }, (_, i) => 2025 + i); // Generate years from 1990 to current year
+const years = Array.from({ length: 5 }, (_, i) => 2023 + i); // Generate years from 1990 to current year
 
 /* const quarters: Report[] = [
   { value: "q1", label: "Q1" },

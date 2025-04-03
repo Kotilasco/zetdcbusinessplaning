@@ -11,6 +11,7 @@ import { SessionProvider } from "next-auth/react";
 import StoreProvider from "./StoreProvider";
 import { CodeStoreProvider } from "@/providers/Code-Provider";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { initializeCronJob } from "@/lib/utils/cronJobs";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,6 +25,10 @@ export default async function RootLayout({
   const [loading, setLoading] = useState<boolean>(true); */
 
   // const pathname = usePathname();
+
+  if (typeof window === "undefined") {
+    initializeCronJob();
+  }
 
   return (
     <SessionProvider session={session}>

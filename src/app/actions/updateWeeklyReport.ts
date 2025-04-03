@@ -24,9 +24,9 @@ export async function updateWeeklyReport(workplan: z.infer<typeof FormSchema> & 
     const data = {
         "weeklyTarget": workplan.weeklyTarget,
         "actualWorkDone": workplan.actualWorkDone,
-        "percentageComplete": workplan.percentageComplete,
+        "currency": workplan.currency,
+        "budget": workplan.budget,
         "actualExpenditure": workplan.actualExpenditure,
-        "percentOfBudget": workplan.budgetPercentage,
         "remarks": workplan.remarks,
       }
 

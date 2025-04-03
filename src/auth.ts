@@ -57,6 +57,7 @@ export const {
                     lastname: user.lastname,
                     sectionId: user.sectionId,
                     departmentId: user.departmentId,
+                    divisionId: user.divisionId,
                     role: user.roles?.slice(-1)[0], // Ensure roles array exists before slicing
                     accessTokenExpires: Date.now() + 1000 * 60 * 30, // 30 minutes
                 };
@@ -86,9 +87,10 @@ export const {
                 session.user.role = token.role;
                 session.access_token = token.access_token;
                 session.refresh_token = token.refresh_token;
+                session.user.divisionId = token.divisionId;
             }
 
-         //   console.log(session)
+         //   console.log("Session callback - session after processing:", session);
 
             return session;
         },

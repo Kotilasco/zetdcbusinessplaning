@@ -20,14 +20,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { MONTHS, WEEKS } from "@/data/constants";
+import { MONTHS, WEEKS, CURRENCY } from "@/data/constants";
 
 /* interface Report {
   value: string;
   label: string;
 } */
 
-const years = Array.from({ length: 1 }, (_, i) => 2025 + i); // Generate years from 1990 to current year
+const years = Array.from({ length: 5 }, (_, i) => 2023 + i); // Generate years from 1990 to current year
 
 /* const quarters: Report[] = [
   { value: "q1", label: "Q1" },
@@ -45,8 +45,13 @@ export function WeeklyReport() {
   const [openYear, setOpenYear] = React.useState(false);
   const [openWeek, setOpenWeek] = React.useState(false);
 
+  const [openCurrency, setOpenCurrency] = React.useState(false);
+
   const [openMonth, setOpenMonth] = React.useState(false);
   const [selectedYear, setSelectedYear] = React.useState<string | null>(null);
+  const [selectedCurrency, setSelectedCurrency] = React.useState<string | null>(
+    null,
+  );
   const [selectedWeek, setSelectedWeek] = React.useState<string | null>(null);
 
   const [selectedMonth, setSelectedMonth] = React.useState<string | null>(null);
@@ -192,6 +197,48 @@ export function WeeklyReport() {
             </Command>
           </PopoverContent>
         </Popover>
+
+        <Popover open={openCurrency} onOpenChange={setOpenCurrency}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={openCurrency}
+              className="w-[100px] justify-between"
+            >
+              {selectedCurrency ? selectedCurrency : "Select Currency"}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[100px] p-0">
+            <Command>
+              <CommandList>
+                <CommandGroup>
+                  {CURRENCY.map((curr) => (
+                    <CommandItem
+                      key={curr.value}
+                      value={curr.value}
+                      onSelect={(currentValue) => {
+                        setSelectedCurrency(currentValue);
+                        setOpenCurrency(false);
+                      }}
+                    >
+                      {curr.label}
+                      <Check
+                        className={cn(
+                          "ml-auto",
+                          selectedMonth === curr.value
+                            ? "opacity-100"
+                            : "opacity-0",
+                        )}
+                      />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {selectedYear && selectedMonth && selectedWeek && (
@@ -201,6 +248,7 @@ export function WeeklyReport() {
             year={selectedYear}
             month={selectedMonth}
             week={selectedWeek}
+            currency={selectedCurrency ?? undefined}
           />
         </Suspense>
       )}

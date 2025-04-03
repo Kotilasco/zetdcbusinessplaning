@@ -55,23 +55,43 @@ export async function getAllWorkPlansBySection() {
 
     noStore();
 
-   // console.log(session)
+    const now = new Date();
+
+// Get the current year
+const year = now.getFullYear();
+
+// Get the current month name
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
+const month = monthNames[now.getMonth()];
+const dayOfMonth = now.getDate();
+
+// Get the current week number
+const week = Math.ceil(dayOfMonth / 7);
+
+console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
 
     try {
         console.log("hello filtering");
         // /api/plans/findBy/departmentId/{departmentId}
 
-        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}`
+        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/week${week}/${month}/${year}`
+
+        console.log(url)
+
 
         if(session?.user.role === UserRoles.ROLE_SENIORMANAGER){
-            url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.departmentId}`
+            
+            url = `${process.env.BASE_URL}/api/plans/findBy/division/${session?.user?.divisionId}/week/week${week}/month/${month}/year/${year}`
                     }
 
         if(session?.user.role === UserRoles.ROLE_ADMIN){
             url = `${process.env.BASE_URL}/api/plans/findAll`
         }
 
-        console.log(url)
+       // console.log(url)
        
         const response = await fetch(
             url,

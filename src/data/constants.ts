@@ -1,16 +1,16 @@
 export const MONTHS = [
-    { value: "january", label: "January" },
-    { value: "february", label: "February" },
-    { value: "march", label: "March" },
-    { value: "april", label: "April" },
-    { value: "may", label: "May" },
-    { value: "june", label: "June" },
-    { value: "july", label: "July" },
-    { value: "august", label: "August" },
-    { value: "september", label: "September" },
-    { value: "october", label: "October" },
-    { value: "november", label: "November" },
-    { value: "december", label: "December" },
+    { value: "January", label: "January" },
+    { value: "February", label: "February" },
+    { value: "March", label: "March" },
+    { value: "April", label: "April" },
+    { value: "May", label: "May" },
+    { value: "June", label: "June" },
+    { value: "July", label: "July" },
+    { value: "August", label: "August" },
+    { value: "September", label: "September" },
+    { value: "October", label: "October" },
+    { value: "November", label: "November" },
+    { value: "December", label: "December" },
 ] as const
 
 export const WEEKS = [
@@ -18,6 +18,11 @@ export const WEEKS = [
     {value: 'week2', label: 'Week 2'},
     {value: 'week3', label: 'Week 3'},
     {value: 'week4', label: 'Week 4'},
+] as const
+
+export const CURRENCY = [
+    {value: "USD", label: 'USD'},
+    {value: 'ZWL', label: 'ZWL'},
 ] as const
 
 export const QUARTERS = [

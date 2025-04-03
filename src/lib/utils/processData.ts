@@ -10,13 +10,11 @@ export function processTaskData(data) {
     const statusCounts = {};
     let totalExpenditure = 0;
   
-    data.forEach(task => {
+    data?.forEach(task => {
       task.scopes.forEach(scope => {
         const targetDate = new Date(scope.targetCompletionDate);
 
-        console.log('gfgdsdasdsddsfdf')
-
-        console.log(task)
+      
   
         // 1. Overdue Tasks Count
         if (

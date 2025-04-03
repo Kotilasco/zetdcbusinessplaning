@@ -6,7 +6,7 @@ import DashboardPage from "@/components/Dash";
 import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
-  title: "Zetdc Bussiness Planning",
+  title: "Zetdc Performace Reporting System",
   description: "This is the application for all the reporting",
 };
 
@@ -14,8 +14,8 @@ export default function Home() {
   return (
     <>
       <DefaultLayout>
-       {/*  <ECommerce /> */}
-           <DashboardPage />
+        {/*  <ECommerce /> */}
+        <DashboardPage />
       </DefaultLayout>
     </>
   );

@@ -173,6 +173,7 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
                     <td className="border p-2">
                       {report.scopes?.map((scope) => scope.details).join(", ")}
                     </td>
+
                     <td className="border p-2">{report.weeklyTarget}</td>
                     <td className="border p-2">{report.actualWorkDone}</td>
                     <td className="border p-2">
@@ -180,7 +181,8 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
                       {report.scopes
                         ?.flatMap((scope) =>
                           scope.assignedTeamMembers?.map(
-                            (member) => member.firstname + " " + member.lastname,
+                            (member) =>
+                              member.firstname + " " + member.lastname,
                           ),
                         )
                         .join(", ")}

@@ -22,9 +22,10 @@ async function getTasks(id: any) {
     path.join(process.cwd(), "src/app/tasks/data/tasks.json"),
   ); */
   console.log("kkllllkkk");
-  // console.log(id);
+  console.log(id);
 
   const data = await getOverdueTasksByMemberId(id?.id);
+  console.log(data);
 
   if (!data) {
     throw new Error("Failed to fetch tasks data from API");
@@ -49,10 +50,14 @@ async function getTasks(id: any) {
         priority = "low"; // Fallback priority
     }
 
+    console.log("kkkffjjwejjew");
+
+    console.log(task);
+
     return {
-      id: task.id?.toString() || "N/A",
-      title: task.details || "No title provided",
-      status: task.status.toLowerCase(), // Convert status to lowercase
+      id: task?.scope?.id?.toString() || "N/A",
+      title: task?.scope?.details || "No title provided",
+      status: task?.scope?.status?.toLowerCase() || "IN_PROGRESS", // Convert status to lowercase
       label: "documentation", // Static value (can be dynamic if needed)
       priority, // Use the calculated priority
     };
@@ -65,11 +70,13 @@ async function getTasks(id: any) {
 export default async function OverdueTask(id: number) {
   const tasks = await getTasks(id);
 
+  console.log(tasks);
+
   return (
     <>
-      {tasks.length > 0 ? (
+      {tasks.length < 0 ? (
         <div>
-          <h1 className="text-2xl font-bold">
+          <h1 className=" mt- 2 text-lg font-semibold">
             No overdue tasks for the member
           </h1>
         </div>
