@@ -38,7 +38,7 @@ export async function getWeeklyExpenditureComparison(data: WeeklyTableProps = {}
    //console.log(mergedData)
 
     try {
-        console.log("hello filtering");
+      //  console.log("hello filtering");
         // /api/plans/expenditure/departmentId/{departmentId}/week/{week}/month/{month}/year/{year}/currency/{currency}
 
         let url = `${process.env.BASE_URL}/api/plans/expenditure/sectionId/${session?.user?.sectionId}/week/${mergedData.week}/month/${mergedData.month}/year/${mergedData.year}/currency/${mergedData.currency}`

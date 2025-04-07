@@ -1,24 +1,31 @@
+//@ts-nocheck
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "../ui/button";
 import { getDepartments } from "@/app/actions/getDepartments";
+import { getDepartmentsByDivisionId } from "@/app/actions/getDepartmentsByDivisionId";
+import Link from "next/link";
 
 export async function Departments() {
-  const departments = (await getDepartments()) || [];
+  const departments = (await getDepartmentsByDivisionId()) || [];
 
   console.log(departments);
 
   return (
     <div className="space-y-8">
-      {departments?.length > 0 ? (
-        departments.map((department) => (
+      {departments !== null ? (
+        departments.assignedDepartments.map((department) => (
           <div className="flex items-center" key={department.id}>
             <div className="ml-4 space-y-1">
               <p className="text-sm font-medium leading-none">
                 {department.name}
               </p>
             </div>
+
             <div className="ml-auto font-medium">
-              <Button>View</Button>
+              <Link href={`/department/${department.id}`}>
+                <Button>View</Button>
+              </Link>
             </div>
           </div>
         ))

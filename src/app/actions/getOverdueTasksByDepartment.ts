@@ -21,10 +21,10 @@ export async function getOverdueTasksByDepartment(
 
   noStore();
 
-   console.log(data)
+  // console.log(data)
 
   try {
-    console.log("hello here we are!!!!");
+   // console.log("hello here we are!!!!");
 
     let url = `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${session?.user?.departmentId}`;
 
@@ -45,7 +45,7 @@ export async function getOverdueTasksByDepartment(
     if (response.ok) {
       console.log("Successful");
       let app = await response.json(); // Extract the JSON data from the response
-      console.log(app);
+      //console.log(app);
       return app;
     }
   } catch (error: any) {

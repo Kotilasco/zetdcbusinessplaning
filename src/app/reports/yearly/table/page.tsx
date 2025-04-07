@@ -100,7 +100,7 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
           quarter,
           status: "IN_PROGRESS",
         });
-        console.log(response);
+       // console.log(response);
         setReports(response);
       } catch (error: any) {
         console.log("");

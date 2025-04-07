@@ -69,7 +69,7 @@ function RegForm() {
       registration(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
-        console.log(data);
+        //console.log(data);
       });
     });
   };

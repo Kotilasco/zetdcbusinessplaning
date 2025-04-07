@@ -14,12 +14,10 @@ export async function getListOfOverdueTasks(
 
   noStore();
 
-  console.log('mmmmmm')
-  console.log(departmentId);
-  console.log(session)
+
 
   try {
-    console.log("hello here we are??");
+   // console.log("hello here we are??");
 
     let url = `${process.env.BASE_URL}/api/plans/section-list-overdue/workplans/department/${departmentId}`;
 
@@ -100,7 +98,7 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
 
     if (response.ok) {
       let app = await response.json(); // Extract the JSON data from the response
-     console.log(app);
+    // console.log(app);
       return app;
     }
   } catch (error: any) {

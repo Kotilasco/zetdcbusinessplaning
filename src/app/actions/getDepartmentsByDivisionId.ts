@@ -15,7 +15,7 @@ export type Department = {
 
 
 
-export async function getTeamMembersInDepartment(): Promise<Department[] | undefined> {
+export async function getDepartmentsByDivisionId() {
     const session = await auth();
 
     // Check if the session or token exists
@@ -31,9 +31,8 @@ export async function getTeamMembersInDepartment(): Promise<Department[] | undef
     //console.log(baseUrl)
 
     try {
-        console.log("Fetching team members...");
-        ///api/teamMembers/department/{departmentId}
-        const response = await fetch(`${baseUrl}/api/teamMembers/department/${session?.user?.departmentId}`, {
+        console.log("Fetching departments...");
+        const response = await fetch(`${baseUrl}/api/divisions/findById/${session?.user?.divisionId}`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",
@@ -44,10 +43,10 @@ export async function getTeamMembersInDepartment(): Promise<Department[] | undef
 
         if (response.ok) {
             const app = await response.json(); // Extract JSON data from the response
-         //   console.log("Members fetched successfully:", app);
+//console.log("Departments fetched successfully:", app);
             return app;
         } else {
-            throw new Error(`Failed to fetch team members: ${response.statusText}`);
+            throw new Error(`Failed to fetch departments: ${response.statusText}`);
         }
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";

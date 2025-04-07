@@ -35,7 +35,7 @@ export async function rescheduleThePlan(data: ReschedulePlan, scopeId: number) {
             },
         });
 
-        console.log(response)
+        //console.log(response)
 
         if (!response.ok) {
             throw new Error("Error posting data");

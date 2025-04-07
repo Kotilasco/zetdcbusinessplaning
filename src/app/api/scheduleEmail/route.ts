@@ -55,9 +55,9 @@ export default function handler(req, res) {
             }),
           }); */
 
-          console.log(data)
+          //console.log(data)
 
-          console.log('Emails sent successfully!');
+          //console.log('Emails sent successfully!');
         } catch (error) {
           console.error('Error during task execution:', error);
         }

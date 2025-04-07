@@ -62,7 +62,7 @@ export default async function TaskDetails({ params }: any) {
 
   const scope = data?.scopes[0];
 
-  console.log(data);
+ // console.log(data);
 
   return (
     <DefaultLayout>

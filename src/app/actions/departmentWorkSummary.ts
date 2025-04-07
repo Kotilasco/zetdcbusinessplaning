@@ -33,7 +33,7 @@ export async function getDepartmentWorkSummary() {
     throw new Error("BASE_URL is not defined in environment variables");
   }
 
-  console.log(session);
+  // console.log(session);
 
   let url;
 
@@ -52,7 +52,7 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
   }
 
   try {
-    console.log("Fetching summary...");
+    //console.log("Fetching summary...");
     ///api/teamMembers/department/{departmentId}
     const response = await fetch(
       url,
@@ -66,12 +66,12 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
       },
     );
 
-    console.log(response)
+    // console.log(response)
 
     if (response.ok) {
       const app = await response.json(); // Extract JSON data from the response
 
-      console.log(app)
+     // console.log(app)
 
       return app;
     } else {
@@ -97,7 +97,7 @@ export async function getDivisionSummary(data: WeeklyTableProps = {}) {
     ...data,
   };
   const { year, month, currency,week } = mergedData;
-  console.log(mergedData)
+  //console.log(mergedData)
 
   const session = await auth();
 
@@ -111,7 +111,7 @@ export async function getDivisionSummary(data: WeeklyTableProps = {}) {
     throw new Error("BASE_URL is not defined in environment variables");
   }
 
-  console.log(session);
+  //console.log(session);
 
   let url;
 
@@ -128,10 +128,10 @@ export async function getDivisionSummary(data: WeeklyTableProps = {}) {
 url = `${baseUrl}/api/plans/workplans/summary/department/1`
   }
 
-  console.log(url)
+  //console.log(url)
 
   try {
-    console.log("Fetching summary...");
+   // console.log("Fetching summary...");
     ///api/teamMembers/department/{departmentId}
     const response = await fetch(
       url,
@@ -145,12 +145,12 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
       },
     );
 
-    console.log(response)
+    //console.log(response)
 
     if (response.ok) {
       const app = await response.json(); // Extract JSON data from the response
 
-      console.log(app)
+   //   console.log(app)
 
       return app;
     } else {

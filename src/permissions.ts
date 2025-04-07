@@ -8,7 +8,7 @@ const ROLES = {
     "create:user", "create:member",'create:department'
   ],
   [UserRoles.ROLE_MANAGER]: ["create:teammember", "create:workplan", 'update:report','view:members', 'create:workplan'],
-    [UserRoles.ROLE_SENIORMANAGER]: [ 'create:sections', 'view:sections','view:department'],
+    [UserRoles.ROLE_SENIORMANAGER]: [ 'create:sections', 'view:sections','view:department', 'division:reports'],
   [UserRoles.ROLE_USER]: ["view:comments",],
   [UserRoles.ROLE_SUPERADMIN]: [
     "create:user", "create:member", 'update:report','create:department','view:department'

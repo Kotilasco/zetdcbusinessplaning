@@ -44,14 +44,14 @@ export default async function MemberInfo({ params }: any) {
   const data = await gettaskedGroupedByStatusForMember(params?.id);
   const member = await getMemberById(params?.id);
 
-  console.log(data);
+  //console.log(data);
 
   const completeData = allStatuses.map((status) => {
     const found = data.find((item) => item.status === status);
     return found ? found : { taskCount: 0, status };
   });
 
-  console.log(data);
+ // console.log(data);
 
   return (
     <DefaultLayout>

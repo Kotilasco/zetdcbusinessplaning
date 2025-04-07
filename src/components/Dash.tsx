@@ -48,6 +48,7 @@ import StackedBarChart from "./DashboardGraphs/StackedBarChart";
 import { getPieDataForOverdueDeptTasks } from "@/app/actions/getOverdueTaskForDepartment";
 import DashboardWithFilters from "./DashboardGraphs/DashboardWithFilters";
 import Landing from "./DashboardGraphs/Landing";
+import DivisionExpenditureComparison from "./AdminDashboard/DivisionExpenditureComparison";
 
 // Simulate a server-side data fetch (replace with your actual fetch logic)
 async function fetchRevenueData() {
@@ -60,7 +61,6 @@ export const metadata: Metadata = {
   title: "Dashboard",
   description: "Zetdc Performance Reporting System",
 };
-
 
 const rev = await getAllWorkPlansBySection();
 
@@ -111,6 +111,9 @@ export default async function DashboardPage() {
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              {role && hasPermission([role], "division:reports") && (
+                <TabsTrigger value="division">Comparisons</TabsTrigger>
+              )}
               <TabsTrigger value="reports">Reports</TabsTrigger>
               {role && hasPermission([role], "create:member") && (
                 <TabsTrigger value="create">Create Team Member</TabsTrigger>
@@ -124,9 +127,9 @@ export default async function DashboardPage() {
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-4 ">
-                <Card className="col-span-4">
+                {/*   <Card className="col-span-4">
                   <CardHeader>
-                    {/* <CardTitle>
+                    <CardTitle>
                       {role && hasPermission([role], "create:department") && (
                         <p>Create Department</p>
                       )}
@@ -137,10 +140,10 @@ export default async function DashboardPage() {
                       {role && hasPermission([role], "view:department") && (
                         <p>Department Team Members</p>
                       )}
-                    </CardTitle> */}
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2">
-                    {/*  {role && hasPermission([role], "create:department") && (
+                    {role && hasPermission([role], "create:department") && (
                       <DepartmentCreationForm />
                     )}
                     {role && hasPermission([role], "view:members") && (
@@ -148,22 +151,14 @@ export default async function DashboardPage() {
                     )}
                     {role && hasPermission([role], "view:department") && (
                       <Members />
-                    )} */}
-
-                    <Landing />
-                  </CardContent>
-                </Card>
-                {/* <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Recent Activities</CardTitle>
-                    <CardDescription>
-                      The current recent activities
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentActivities />
+                    )}
                   </CardContent>
                 </Card> */}
+                {role && hasPermission([role], "division:reports") && (
+                  <Card className="col-span-4">
+                    <DivisionExpenditureComparison />
+                  </Card>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="analytics" className="space-y-4">
@@ -355,6 +350,15 @@ export default async function DashboardPage() {
                   </Card>
                 </div>
               )}
+            </TabsContent>
+            <TabsContent value="division" className="space-y-4">
+              <div className="grid gap-4 ">
+                {role && hasPermission([role], "division:reports") && (
+                  <Card className="col-span-4">
+                    <Landing />
+                  </Card>
+                )}
+              </div>
             </TabsContent>
             <TabsContent value="reports" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-8">

@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useState, useTransition, useRef } from "react";
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -59,6 +59,9 @@ import { cn } from "@/lib/utils";
 import { useCurrentRole } from "@/hooks/use-current-role";
 import { getAllWorkPlansBySection } from "@/app/actions/getWorkPlansBySection";
 import { hasPermission } from "@/permissions";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 export const FormSchema = z.object({
   month: z.string({
@@ -93,6 +96,86 @@ export default function SelectForm() {
     startDate: null,
     target: null,
   });
+
+  // Table reference for printing
+  const tableRef = useRef(null);
+
+  // Export table as PDF
+  const exportAsPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Work Plans", 14, 10);
+
+    // Use jsPDF's autoTable plugin to generate a table
+    /*  autoTable(doc, {
+      html: tableRef.current,
+      startY: 20,
+      theme: "grid", // Apply a grid style
+      headStyles: { fillColor: [0, 102, 204] }, // Change header color
+      margin: { top: 20 },
+    }); */
+    const table = document.getElementById("data-table"); // Reference the table by ID
+    if (!table) {
+      console.error("Table element not found!");
+      return; // Stop execution if the table is missing
+    }
+    autoTable(doc, {
+      html: table,
+      startY: 20,
+      styles: { overflow: "linebreak", cellPadding: 3 }, // Wrap long text
+      columnStyles: {
+        2: { cellWidth: 50 }, // Adjust column width for "Scope"
+        3: { cellWidth: 70 }, // Adjust column width for "Team Members"
+      },
+    });
+
+    // Save the PDF
+    const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
+  };
+
+  // Export table as Excel
+  const exportAsExcel = () => {
+    const table = /* document.getElementById("data-table"); */ tableRef.current;
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "WorkPlans" });
+    const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    // XLSX.writeFile(workbook, "WorkPlans.xlsx");
+  };
+
+  // Print the table
+  const handlePrint = () => {
+    const tableHTML = tableRef.current.outerHTML;
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Work Plans</title>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: black;
+              color: white;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Work Plans</h1>
+          ${tableHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   const role = useCurrentRole();
 
@@ -201,55 +284,88 @@ export default function SelectForm() {
         <h1 className="mb-4 text-2xl font-bold">Work Plan Module</h1>
 
         {/* Work Plan Table */}
-        <table className="w-full border-collapse border border-gray-300">
-          <thead className="bg-black text-white">
-            <tr>
-              <th className="border p-2">Month</th>
-              <th className="border p-2">Week</th>
-              <th className="border p-2">Scope</th>
-              <th className="border p-2">Team Members</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading
-              ? // Display skeleton loader rows
-                Array.from({ length: 5 }).map((_, index) => (
-                  <tr key={index} className="border">
-                    <td className="border p-2">
-                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                    </td>
-                    <td className="border p-2">
-                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                    </td>
-                    <td className="border p-2">
-                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                    </td>
-                    <td className="border p-2">
-                      <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
-                    </td>
-                  </tr>
-                ))
-              : // Display actual data rows
-                workPlans?.map((plan, index) => (
-                  <tr key={index} className="border">
-                    <td className="border p-2">{plan.month}</td>
-                    <td className="border p-2">{plan.week}</td>
-                    <td className="border p-2">
-                      {plan.scopes?.map((scope) => scope.details).join(", ")}
-                    </td>
-                    <td className="border p-2">
-                      {plan.scopes
-                        ?.flatMap((scope) =>
-                          scope.assignedTeamMembers?.map(
-                            (member) => member.firstname + " " + member.lastname,
-                          ),
-                        )
-                        .join(" - ")}
-                    </td>
-                  </tr>
-                ))}
-          </tbody>
-        </table>
+        <div>
+          <div ref={tableRef}>
+            <table
+              id="data-table"
+              className="w-full border-collapse border border-gray-300"
+            >
+              <thead className="bg-black text-white">
+                <tr>
+                  <th className="border p-2">Month</th>
+                  <th className="border p-2">Week</th>
+                  <th className="border p-2">Scope</th>
+                  <th className="border p-2">Team Members</th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading
+                  ? // Display skeleton loader rows
+                    Array.from({ length: 5 }).map((_, index) => (
+                      <tr key={index} className="border">
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
+                      </tr>
+                    ))
+                  : // Display actual data rows
+                    workPlans?.map((plan, index) => (
+                      <tr key={index} className="border">
+                        <td className="border p-2">{plan.month}</td>
+                        <td className="border p-2">{plan.week}</td>
+                        <td className="border p-2">
+                          {plan.scopes
+                            ?.map((scope) => scope.details)
+                            .join(", ")}
+                        </td>
+                        <td className="border p-2">
+                          {plan.scopes
+                            ?.flatMap((scope) =>
+                              scope.assignedTeamMembers?.map(
+                                (member) =>
+                                  member.firstname + " " + member.lastname,
+                              ),
+                            )
+                            .join(" - ")}
+                        </td>
+                      </tr>
+                    ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-4 space-x-4">
+            <button
+              onClick={exportAsPDF}
+              disabled={isLoading}
+              className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+            >
+              Export as PDF
+            </button>
+            <button
+              onClick={exportAsExcel}
+              disabled={isLoading}
+              className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+            >
+              Export as Excel
+            </button>
+            <button
+              onClick={handlePrint}
+              disabled={isLoading}
+              className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+            >
+              Print
+            </button>
+          </div>
+        </div>
 
         {role && hasPermission([role], "create:workplan") && (
           <div className="mt-4">

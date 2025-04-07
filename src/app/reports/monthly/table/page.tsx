@@ -203,7 +203,7 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
     const response = await rescheduleThePlan(payload, id);
 
     // Handle the server's response
-    console.log(response);
+    //console.log(response);
   };
 
   const handleContinue = async (id: number) => {
@@ -215,7 +215,7 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
     const response = await rescheduleThePlan(payload, id);
 
     // Handle the server's response
-    console.log(response);
+    //console.log(response);
   };
 
   const [formData, setFormData] = useState({
@@ -343,7 +343,7 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
   }
 
   function onReschedule(data: z.infer<typeof FormSchema>, reportId: string) {
-    console.log(data);
+   // console.log(data);
   }
 
   return (

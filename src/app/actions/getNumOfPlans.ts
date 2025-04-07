@@ -21,10 +21,10 @@ export async function getNumOfPlans(
 
   noStore();
 
-   console.log(data)
+ //  console.log(data)
 
   try {
-    console.log("hello here we are!!!!");
+   // console.log("hello here we are!!!!");
 
     let url = `${process.env.BASE_URL}/api/plans/graphs/member-workplan-count/section/${session?.user?.sectionId}/year/${data?.year}`;
 
@@ -45,7 +45,7 @@ export async function getNumOfPlans(
     if (response.ok) {
       console.log("Successful");
       let app = await response.json(); // Extract the JSON data from the response
-      console.log(app);
+   //   console.log(app);
       return app;
     }
   } catch (error: any) {

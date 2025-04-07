@@ -74,12 +74,12 @@ const week = Math.ceil(dayOfMonth / 7);
 console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
 
     try {
-        console.log("hello filtering");
+        // console.log("hello filtering");
         // /api/plans/findBy/departmentId/{departmentId}
 
-        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/week${week}/${month}/${year}`
+        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/week${week}/March/${year}`
 
-        console.log(url)
+        // console.log(url)
 
 
         if(session?.user.role === UserRoles.ROLE_SENIORMANAGER){

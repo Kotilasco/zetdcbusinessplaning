@@ -80,9 +80,9 @@ url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.de
         );
        
         if (response.ok) {
-            console.log("Successful");
+           // console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-            console.log(app);
+           // console.log(app);
             return app;
         }
     } catch (error: any) {

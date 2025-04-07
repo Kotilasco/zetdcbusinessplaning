@@ -14,7 +14,7 @@ const Donut = ({ data }) => {
   const [memberData, setMemberData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log(data);
+  //console.log(data);
 
   const datahero = [
     {
@@ -30,9 +30,9 @@ const Donut = ({ data }) => {
     const fetchData = async () => {
       try {
         const response = await gettaskedGroupedByStatusForMember(data);
-        console.log("aaaaaaaaaaaaaa");
-        console.log(response);
-        console.log("bbbbbbbbbbbbb");
+       // console.log("aaaaaaaaaaaaaa");
+        //console.log(response);
+       // console.log("bbbbbbbbbbbbb");
         setMemberData(response);
       } catch (error: any) {
         console.log(error);

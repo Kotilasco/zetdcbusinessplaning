@@ -25,7 +25,7 @@ export default function BudgetPieChart({ data }: any) {
     );
   }
 
-  console.log(data);
+ // console.log(data);
 
   const updatedData = [
     {

@@ -25,7 +25,7 @@ export async function getOverdueTasksByMemberId(id: number) {
         );
         if (response.ok) {
             let app = await response.json(); // Extract the JSON data from the response
-            console.log(app);
+            // console.log(app);
             return app;
         }
     } catch (error: any) {
@@ -76,7 +76,7 @@ export async function getOverdueTasksForDivision() {
         );
         if (response.ok) {
             let app = await response.json(); // Extract the JSON data from the response
-            console.log(app);
+          //  console.log(app);
             return app;
         }
     } catch (error: any) {
@@ -114,7 +114,7 @@ function groupPlansBySection(plans) {
     //console.log(baseUrl)
 
     try {
-        console.log("Fetching section...");
+      //  console.log("Fetching section...");
         const response = await fetch(`${baseUrl}/api/sections/findById/${sectionId}`, {
             method: "GET",
             headers: {

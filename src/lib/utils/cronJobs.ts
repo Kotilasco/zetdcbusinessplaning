@@ -29,8 +29,8 @@ export function initializeCronJob() {
       // Fetch data from your backend
       const response = await getAllWorkPlansBySection();
 
-      console.log(response);
-      console.log('Emails sent successfully!');
+    //  console.log(response);
+    //  console.log('Emails sent successfully!');
     } catch (error) {
       console.error('Error during task execution:', error);
     }
