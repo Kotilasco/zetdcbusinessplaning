@@ -1,7 +1,7 @@
 //@ts-nocheck
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -97,6 +97,9 @@ import BudgetPieChart from "@/components/DashboardGraphs/WeeklyPieChart";
 import BudgetUsageGauge from "@/components/DashboardGraphs/WeeklyGuageChart";
 import WeeklyExpenditureBarChart from "@/components/DashboardGraphs/MonthlyBarChart";
 import WeeklyBudgetDonutChart from "@/components/DashboardGraphs/WeeklyDonutChart";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -211,7 +214,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
     const response = await rescheduleThePlan(payload, id);
 
     // Handle the server's response
-   // console.log(response);
+    // console.log(response);
   };
 
   const [formData, setFormData] = useState({
@@ -269,13 +272,125 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
     });
   };
 
+  // Table reference for printing
+  const tableRef = useRef(null);
+
+  // Export table as PDF
+  const exportAsPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Work Plans", 14, 10);
+
+    const table = document.getElementById("data-table");
+    if (!table) {
+      console.error("Table element not found!");
+      return;
+    }
+
+    // Extract headers excluding "Actions"
+    const headers = [...table.querySelectorAll("th")]
+      .filter((header) => header.innerText.trim() !== "Actions")
+      .map((header) => header.innerText);
+
+    // Extract row data excluding "Actions"
+    const rows = [...table.querySelectorAll("tr")].map((row) =>
+      [...row.querySelectorAll("td")]
+        .filter((cell) => cell.cellIndex !== 8) // Adjust index if needed
+        .map((cell) => cell.innerText),
+    );
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows.filter((row) => row.length > 0),
+      startY: 20,
+    });
+
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+    doc.save(`WorkPlans_${timestamp}.pdf`);
+  };
+
+  // Export table as Excel
+  const exportAsExcel = () => {
+    const table = document.getElementById("data-table");
+    if (!table) {
+      console.error("Table element not found!");
+      return;
+    }
+
+    // Extract headers excluding "Actions"
+    const headers = [...table.querySelectorAll("th")]
+      .filter((header) => header.innerText.trim() !== "Actions")
+      .map((header) => header.innerText);
+
+    // Extract row data excluding "Actions"
+    const rows = [...table.querySelectorAll("tr")].map((row) =>
+      [...row.querySelectorAll("td")]
+        .filter((cell) => cell.cellIndex !== 8) // Adjust index if needed
+        .map((cell) => cell.innerText),
+    );
+
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      headers,
+      ...rows.filter((row) => row.length > 0),
+    ]);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "WorkPlans");
+
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+    XLSX.writeFile(workbook, `WorkPlans_${timestamp}.xlsx`);
+  };
+
+  // Print the table
+  const handlePrint = () => {
+    const clonedTable = tableRef.current.cloneNode(true);
+
+    // Remove the "Actions" column (header + body)
+    clonedTable.querySelectorAll("tr").forEach((row) => {
+      row.querySelectorAll("th, td").forEach((cell, index) => {
+        if (cell.innerText.trim() === "Actions" || index === 8) {
+          // Adjust index if needed
+          cell.remove();
+        }
+      });
+    });
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Work Plans</title>
+          <style>
+            table {
+              width: 100%;
+              border-collapse: collapse;
+            }
+            th, td {
+              border: 1px solid black;
+              padding: 8px;
+              text-align: left;
+            }
+            th {
+              background-color: black;
+              color: white;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Work Plans</h1>
+          ${clonedTable.outerHTML}
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   useEffect(() => {
     setIsLoading(true);
     const fetchData = async () => {
       try {
         const response = await getAllWorkPlansFilter({ year, month, week });
 
-        console.log("jjjjjj");
+       
         setReports(response);
       } catch (error: any) {
         console.log("");
@@ -332,8 +447,11 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
-      <div className="no-scrollbar mb-5 overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300">
+      <div className="no-scrollbar mb-5 overflow-x-auto" ref={tableRef}>
+        <table
+          id="data-table"
+          className="w-full border-collapse border border-gray-300"
+        >
           <thead className="bg-black text-white">
             <tr>
               <th className="border p-2">Activity</th>
@@ -723,6 +841,29 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
           </tbody>
         </table>
       </div>
+      <div className="mt-4 space-x-4">
+        <button
+          onClick={exportAsPDF}
+          disabled={isLoading}
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Export as PDF
+        </button>
+        <button
+          onClick={exportAsExcel}
+          disabled={isLoading}
+          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+        >
+          Export as Excel
+        </button>
+        <button
+          onClick={handlePrint}
+          disabled={isLoading}
+          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+        >
+          Print
+        </button>
+      </div>
 
       <hr />
       <div className="mx-auto my-4 h-96 w-full p-2">
@@ -730,7 +871,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
         <StackedBarChart data={pieData} />
       </div>
 
-      <hr />
+      {/* <hr />
       <div className="mx-auto my-4 w-full p-2">
         <h2>Comparing expenditure and budget</h2>
         <BudgetPieChart data={pieData} />
@@ -740,13 +881,13 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
       <div className="mx-auto my-4 h-96 w-full p-2">
         <h2>Percent of Budget Used</h2>
         <BudgetUsageGauge data={pieData} />
-      </div>
+      </div> */}
 
-      <hr />
+      {/* <hr />
       <div className="mx-auto my-4 h-96 w-full p-2">
         <h2> Expenditure vs Remaining Budget</h2>
         <WeeklyBudgetDonutChart data={pieData} />
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -67,9 +67,10 @@ const PieGraph = ({ departmentData }: any) => {
     },
   ];
 
+  console.log(departmentData);
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
-
       <div className="grid grid-cols-1 gap-8">
         {/* Pie Chart - Budget Utilization */}
         <div className="rounded-lg bg-white p-4 shadow-md">

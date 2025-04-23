@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -89,6 +89,86 @@ const columns = [
 function OverdueTable() {
   const [data, setData] = useState([]);
 
+  // Table reference for printing
+  const tableRef = useRef(null);
+
+  // Export table as PDF
+  const exportAsPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Overdue Work Plans", 14, 10);
+
+    // Use jsPDF's autoTable plugin to generate a table
+    /*  autoTable(doc, {
+        html: tableRef.current,
+        startY: 20,
+        theme: "grid", // Apply a grid style
+        headStyles: { fillColor: [0, 102, 204] }, // Change header color
+        margin: { top: 20 },
+      }); */
+    const table = document.getElementById("data-table"); // Reference the table by ID
+    if (!table) {
+      console.error("Table element not found!");
+      return; // Stop execution if the table is missing
+    }
+    autoTable(doc, {
+      html: table,
+      startY: 20,
+      styles: { overflow: "linebreak", cellPadding: 3 }, // Wrap long text
+      columnStyles: {
+        2: { cellWidth: 50 }, // Adjust column width for "Scope"
+        3: { cellWidth: 70 }, // Adjust column width for "Team Members"
+      },
+    });
+
+    // Save the PDF
+    const fileName = `Overdue_WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
+  };
+
+  // Export table as Excel
+  const exportAsExcel = () => {
+    const table = /* document.getElementById("data-table"); */ tableRef.current;
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "WorkPlans" });
+    const fileName = `Overdue_WorkPlans_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    // XLSX.writeFile(workbook, "WorkPlans.xlsx");
+  };
+
+  // Print the table
+  const handlePrint = () => {
+    const tableHTML = tableRef.current.outerHTML;
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+          <head>
+            <title>Work Plans</title>
+            <style>
+              table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+              th, td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: left;
+              }
+              th {
+                background-color: black;
+                color: white;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Work Plans</h1>
+            ${tableHTML}
+          </body>
+        </html>
+      `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -119,61 +199,44 @@ function OverdueTable() {
       <h1 className="mb-4 text-xl font-bold text-gray-700">
         Overdue Work Plans
       </h1>
-      <table className="w-full border border-gray-300">
-        <thead className="bg-gray-100">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th
-                  key={header.id}
-                  className="border border-gray-300 p-2 text-left text-sm font-medium text-gray-600"
-                >
-                  {header.isPlaceholder
-                    ? null
-                    : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <React.Fragment key={row.id}>
-              {row.getIsGrouped() ? (
-                // Render the group header (e.g., "Commercial", "Hardware and Operations")
-                <tr>
-                  <td
-                    colSpan={columns.length}
-                    className="bg-gray-200 px-4 py-2 font-bold"
+      <div ref={tableRef}>
+        <table id="data-table" className="w-full border border-gray-300">
+          <thead className="bg-gray-100">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <tr key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <th
+                    key={header.id}
+                    className="border border-gray-300 p-2 text-left text-sm font-medium text-gray-600"
                   >
-                    {row.getValue("sectionName")} {/* Group name */}
-                  </td>
-                </tr>
-              ) : (
-                // Render individual rows (child rows within the group)
-                <tr className={row.depth > 0 ? "bg-gray-50" : "bg-white"}>
-                  {row.getVisibleCells().map((cell) => (
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
+                  </th>
+                ))}
+              </tr>
+            ))}
+          </thead>
+          <tbody>
+            {table.getRowModel().rows.map((row) => (
+              <React.Fragment key={row.id}>
+                {row.getIsGrouped() ? (
+                  // Render the group header (e.g., "Commercial", "Hardware and Operations")
+                  <tr>
                     <td
-                      key={cell.id}
-                      className="border border-gray-300 px-4 py-2 text-sm"
+                      colSpan={columns.length}
+                      className="bg-gray-200 px-4 py-2 font-bold"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {row.getValue("sectionName")} {/* Group name */}
                     </td>
-                  ))}
-                </tr>
-              )}
-
-              {/* Render subRows for grouped rows explicitly */}
-              {row.subRows &&
-                row.subRows.map((subRow) => (
-                  <tr key={subRow.id} className="bg-gray-50">
-                    {subRow.getVisibleCells().map((cell) => (
+                  </tr>
+                ) : (
+                  // Render individual rows (child rows within the group)
+                  <tr className={row.depth > 0 ? "bg-gray-50" : "bg-white"}>
+                    {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className="border border-gray-300 px-4 py-2 text-sm"
@@ -185,11 +248,53 @@ function OverdueTable() {
                       </td>
                     ))}
                   </tr>
-                ))}
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
+                )}
+
+                {/* Render subRows for grouped rows explicitly */}
+                {row.subRows &&
+                  row.subRows.map((subRow) => (
+                    <tr key={subRow.id} className="bg-gray-50">
+                      {subRow.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          className="border border-gray-300 px-4 py-2 text-sm"
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext(),
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-4 space-x-4">
+        <button
+          onClick={exportAsPDF}
+          /* disabled={isLoading} */
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Export as PDF
+        </button>
+        <button
+          onClick={exportAsExcel}
+          /* disabled={isLoading} */
+          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+        >
+          Export as Excel
+        </button>
+        <button
+          onClick={handlePrint}
+         /*  disabled={isLoading} */
+          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+        >
+          Print
+        </button>
+      </div>
     </div>
   );
 }

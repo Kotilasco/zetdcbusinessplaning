@@ -74,18 +74,18 @@ const dayOfMonth = now.getDate();
 // Get the current week number
 const week = Math.ceil(dayOfMonth / 7);
 
-console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
+console.log(`Week: ${week}, Month: ${month}, Year: ${year}`) 
 
   try {
    // console.log("hello here we are???");
 
-    let url = `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${session?.user?.departmentId}`;
+    //let url = `${process.env.BASE_URL}/api/plans/workplans/summary/section/${session?.user?.sectionId}/week/week${week}/month/${month}/year/${year}`;
 
-
-    if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
+ let url = `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${session?.user?.departmentId}`
+    /* if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
    // check later
         url = `${process.env.BASE_URL}/api/plans/overdue/division/${session?.user?.divisionId}/week/week${week}/month/${month}/year/${year}`;
-      }
+      } */
   
 
     const response = await fetch(url, {
@@ -96,9 +96,11 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
       },
     });
 
+    console.log(response)
+
     if (response.ok) {
       let app = await response.json(); // Extract the JSON data from the response
-    // console.log(app);
+     console.log(app);
       return app;
     }
   } catch (error: any) {

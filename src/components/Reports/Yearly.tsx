@@ -41,16 +41,26 @@ interface SelectReportProps {
   table?: string;
 }
 
+const STATUSES = [
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "PENDING", label: "Pending" },
+  { value: "CANCELLED", label: "Cancelled" },
+  { value: "RE_SCHEDULED", label: "Re-Scheduled" }
+];
+
 export function YearlyReport() {
   const [openYear, setOpenYear] = React.useState(false);
-
   const [openQuarter, setOpenQuarter] = React.useState(false);
+  const [openStatus, setOpenStatus] = React.useState(false);
+
   const [selectedYear, setSelectedYear] = React.useState<string | null>(null);
-const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null);
+  const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null);
+  const [selectedStatus, setSelectedStatus] = React.useState<string | null>(null);
 
   const Component = dynamic(
     () => {
-      if (selectedYear && selectedQuarter) {
+      if (selectedYear && selectedQuarter && selectedStatus) {
         return import(`@/app/reports/yearly/table/page`);
       } else {
         return Promise.resolve(() => null);
@@ -59,26 +69,26 @@ const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null
     {
       loading: () => <p>Loading...</p>,
       ssr: false,
-    },
+    }
   );
 
   return (
     <>
       <div className="flex h-auto gap-2">
-
+        {/* Quarter Dropdown */}
         <Popover open={openQuarter} onOpenChange={setOpenQuarter}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               aria-expanded={openQuarter}
-              className="w-[100px] justify-between"
+              className="w-[150px] justify-between"
             >
               {selectedQuarter ? selectedQuarter : "Select Quarter"}
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[100px] p-0">
+          <PopoverContent className="w-[150px] p-0">
             <Command>
               <CommandList>
                 <CommandGroup>
@@ -92,14 +102,10 @@ const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null
                       }}
                     >
                       {quarter.label}
-                      <Check
-                        className={cn(
-                          "ml-auto",
-                          selectedQuarter === quarter.value
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
+                      <Check className={cn(
+                        "ml-auto",
+                        selectedQuarter === quarter.value ? "opacity-100" : "opacity-0"
+                      )} />
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -107,19 +113,21 @@ const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null
             </Command>
           </PopoverContent>
         </Popover>
+
+        {/* Year Dropdown */}
         <Popover open={openYear} onOpenChange={setOpenYear}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               aria-expanded={openYear}
-              className="w-[100px] justify-between"
+              className="w-[150px] justify-between"
             >
               {selectedYear ? selectedYear : "Select Year"}
               <ChevronsUpDown className="opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[100px] p-0">
+          <PopoverContent className="w-[150px] p-0">
             <Command>
               <CommandList>
                 <CommandGroup>
@@ -133,14 +141,49 @@ const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null
                       }}
                     >
                       {year}
-                      <Check
-                        className={cn(
-                          "ml-auto",
-                          selectedYear === year.toString()
-                            ? "opacity-100"
-                            : "opacity-0",
-                        )}
-                      />
+                      <Check className={cn(
+                        "ml-auto",
+                        selectedYear === year.toString() ? "opacity-100" : "opacity-0"
+                      )} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+
+        {/* Status Dropdown */}
+        <Popover open={openStatus} onOpenChange={setOpenStatus}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={openStatus}
+              className="w-[150px] justify-between"
+            >
+              {selectedStatus ? selectedStatus : "Select Status"}
+              <ChevronsUpDown className="opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[150px] p-0">
+            <Command>
+              <CommandList>
+                <CommandGroup>
+                  {STATUSES.map((status) => (
+                    <CommandItem
+                      key={status.value}
+                      value={status.value}
+                      onSelect={(currentValue) => {
+                        setSelectedStatus(currentValue);
+                        setOpenStatus(false);
+                      }}
+                    >
+                      {status.label}
+                      <Check className={cn(
+                        "ml-auto",
+                        selectedStatus === status.value ? "opacity-100" : "opacity-0"
+                      )} />
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -150,12 +193,13 @@ const [selectedQuarter, setSelectedQuarter] = React.useState<string | null>(null
         </Popover>
       </div>
 
-      {selectedYear && selectedQuarter && (
+      {selectedYear && selectedQuarter && selectedStatus && (
         <Suspense fallback={<p>Loading...</p>}>
           {/* @ts-ignore */}
           <Component
             year={selectedYear}
             quarter={selectedQuarter}
+            status={selectedStatus}
           />
         </Suspense>
       )}

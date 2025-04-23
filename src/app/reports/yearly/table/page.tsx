@@ -1,11 +1,14 @@
 //@ts-nocheck
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
+import React, { useState, useEffect, useTransition, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
@@ -79,17 +82,97 @@ import { getWorkplansForYearAndQuarterByStatus } from "@/app/actions/getWorkplan
 
 interface YearlyTableProps {
   year: string;
-
+  status: string;
   quarter: string;
 }
 
-const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
+const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
   const [reports, setReports] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const role = useCurrentRole();
+
+  // Table reference for printing
+  const tableRef = useRef(null);
+
+  // Export table as PDF
+  const exportAsPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Overdue Work Plans", 14, 10);
+
+    // Use jsPDF's autoTable plugin to generate a table
+    /*  autoTable(doc, {
+          html: tableRef.current,
+          startY: 20,
+          theme: "grid", // Apply a grid style
+          headStyles: { fillColor: [0, 102, 204] }, // Change header color
+          margin: { top: 20 },
+        }); */
+    const table = document.getElementById("data-table"); // Reference the table by ID
+    if (!table) {
+      console.error("Table element not found!");
+      return; // Stop execution if the table is missing
+    }
+    autoTable(doc, {
+      html: table,
+      startY: 20,
+      styles: { overflow: "linebreak", cellPadding: 3 }, // Wrap long text
+      columnStyles: {
+        2: { cellWidth: 50 }, // Adjust column width for "Scope"
+        3: { cellWidth: 70 }, // Adjust column width for "Team Members"
+      },
+    });
+
+    // Save the PDF
+    const fileName = `Overdue_WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
+    doc.save(fileName);
+  };
+
+  // Export table as Excel
+  const exportAsExcel = () => {
+    const table = /* document.getElementById("data-table"); */ tableRef.current;
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "WorkPlans" });
+    const fileName = `Overdue_WorkPlans_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    // XLSX.writeFile(workbook, "WorkPlans.xlsx");
+  };
+
+  // Print the table
+  const handlePrint = () => {
+    const tableHTML = tableRef.current.outerHTML;
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+          <html>
+            <head>
+              <title>Work Plans</title>
+              <style>
+                table {
+                  width: 100%;
+                  border-collapse: collapse;
+                }
+                th, td {
+                  border: 1px solid black;
+                  padding: 8px;
+                  text-align: left;
+                }
+                th {
+                  background-color: black;
+                  color: white;
+                }
+              </style>
+            </head>
+            <body>
+              <h1>Work Plans</h1>
+              ${tableHTML}
+            </body>
+          </html>
+        `);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   useEffect(() => {
     setIsLoading(true);
@@ -98,9 +181,9 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
         const response = await getWorkplansForYearAndQuarterByStatus({
           year,
           quarter,
-          status: "IN_PROGRESS",
+          status,
         });
-       // console.log(response);
+        // console.log(response);
         setReports(response);
       } catch (error: any) {
         console.log("");
@@ -117,8 +200,11 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
   return (
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold">Year Report</h1>
-      <div className="no-scrollbar overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300">
+      <div className="no-scrollbar overflow-x-auto" ref={tableRef}>
+        <table
+          id="data-table"
+          className="w-full border-collapse border border-gray-300"
+        >
           <thead className="bg-black text-white">
             <tr>
               <th className="border p-2">Activity</th>
@@ -195,6 +281,29 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter }) => {
                 ))}
           </tbody>
         </table>
+      </div>
+      <div className="mt-4 space-x-4">
+        <button
+          onClick={exportAsPDF}
+          disabled={isLoading}
+          className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+        >
+          Export as PDF
+        </button>
+        <button
+          onClick={exportAsExcel}
+          disabled={isLoading}
+          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+        >
+          Export as Excel
+        </button>
+        <button
+          onClick={handlePrint}
+          disabled={isLoading}
+          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+        >
+          Print
+        </button>
       </div>
     </div>
   );

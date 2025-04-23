@@ -9,7 +9,11 @@ import { DataTable } from "./components/data-table";
 import { UserNav } from "./components/user-nav";
 import { taskSchema } from "./data/schema";
 import { getScopesForMemberById } from "@/app/actions/getTeamMembers";
-import { getOverdueTasksByMemberId, getOverdueTasksForDivision } from "../actions/getOverdueTaskForMember";
+import {
+  getOverdueTasksByMemberId,
+  getOverdueTasksForDivision,
+} from "../actions/getOverdueTaskForMember";
+import { getOverDueTasksByDivision } from "../actions/getOverduePlansByDivision";
 
 export const metadata: Metadata = {
   title: "Division Overdue Tasks",
@@ -17,15 +21,14 @@ export const metadata: Metadata = {
 };
 
 // Simulate a database read for tasks.
-async function getTasks(id: any) {
+async function getTasks() {
   /* const data = await fs.readFile(
     path.join(process.cwd(), "src/app/tasks/data/tasks.json"),
   ); */
   console.log("kkllllkkk");
-  console.log(id);
 
-  const data = await getOverdueTasksForDivision();
-  //console.log(data);
+  const data = await getOverDueTasksByDivision();
+  console.log(data);
 
   if (!data) {
     throw new Error("Failed to fetch tasks data from API");
@@ -52,12 +55,13 @@ async function getTasks(id: any) {
 
     console.log("kkkffjjwejjew");
 
-    console.log(task);
+    console.log(task?.scopes);
+    console.log(task?.scopes?.[0]?.id);
 
     return {
-      id: task?.scope?.id?.toString() || "N/A",
-      title: task?.scope?.details || "No title provided",
-      status: task?.scope?.status?.toLowerCase() || "IN_PROGRESS", // Convert status to lowercase
+      id: task?.scopes?.[0]?.id?.toString() || "N/A",
+      title: task?.scopes?.[0]?.details || "No title provided",
+      status: task?.scopes?.[0]?.status?.toLowerCase() || "IN_PROGRESS", // Convert status to lowercase
       label: "documentation", // Static value (can be dynamic if needed)
       priority, // Use the calculated priority
     };
@@ -67,8 +71,8 @@ async function getTasks(id: any) {
   return z.array(taskSchema).parse(transformedData);
 }
 
-export default async function OverdueTask(id: number) {
-  const tasks = await getTasks(id);
+export default async function DivisionOverdueTask() {
+  const tasks = await getTasks();
 
   console.log(tasks);
 
@@ -77,7 +81,7 @@ export default async function OverdueTask(id: number) {
       {tasks.length < 0 ? (
         <div>
           <h1 className=" mt- 2 text-lg font-semibold">
-            No overdue tasks for the member
+            No overdue tasks in the division
           </h1>
         </div>
       ) : (

@@ -112,7 +112,7 @@ export const POST = async (req: NextRequest) => {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error:", error);
+    console.error("Error:", error)
     return new NextResponse(
       JSON.stringify({ error: "Failed to send email", details: error.message }),
       { status: 500 }
@@ -126,3 +126,6 @@ export const GET = () => {
     { status: 405 }
   );
 };
+
+
+

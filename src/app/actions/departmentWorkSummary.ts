@@ -33,15 +33,31 @@ export async function getDepartmentWorkSummary() {
     throw new Error("BASE_URL is not defined in environment variables");
   }
 
-  // console.log(session);
+  const now = new Date();
+
+  // Get the current year
+  const year = now.getFullYear();
+  
+  // Get the current month name
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const month = monthNames[now.getMonth()];
+  const dayOfMonth = now.getDate();
+  
+  // Get the current week number
+  const week = Math.ceil(dayOfMonth / 7);
 
   let url;
 
+
+
   if(session?.user?.role === UserRoles.ROLE_MANAGER){
-    url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.sectionId}`
+    url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.sectionId}/week/week${week}/month/${month}/year/${year}`
   }else if(session?.user?.role === UserRoles.ROLE_SENIORMANAGER){
     // changes to be made
-    url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.divisionId}`
+    url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.divisionId}/week/${week}/month/${month}/year/${year}`
   }
   else{
     url = `${baseUrl}/api/plans/workplans/summary/department/${session?.user?.departmentId}`
@@ -51,8 +67,11 @@ export async function getDepartmentWorkSummary() {
 url = `${baseUrl}/api/plans/workplans/summary/department/1`
   }
 
+  console.log(url)
+  console.log(session?.user?.role)
+
   try {
-    //console.log("Fetching summary...");
+    console.log("Fetching summary...");
     ///api/teamMembers/department/{departmentId}
     const response = await fetch(
       url,
@@ -71,7 +90,7 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
     if (response.ok) {
       const app = await response.json(); // Extract JSON data from the response
 
-     // console.log(app)
+      console.log(app)
 
       return app;
     } else {
@@ -164,4 +183,75 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
   }
 
  
+}
+
+export async function getDepartmentWorkSummaryById(departmentId: number) {
+  const session = await auth();
+
+  // Check if the session or token exists
+  if (!session?.access_token) {
+    throw new Error("Authentication failed. No access token found.");
+  }
+
+  const baseUrl = process.env.BASE_URL;
+  if (!baseUrl) {
+    throw new Error("BASE_URL is not defined in environment variables");
+  }
+
+  const now = new Date();
+
+  // Get the current year
+  const year = now.getFullYear();
+  
+  // Get the current month name
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const month = monthNames[now.getMonth()];
+  const dayOfMonth = now.getDate();
+  
+  // Get the current week number
+  const week = Math.ceil(dayOfMonth / 7);
+
+
+ 
+console.log(departmentId)
+
+  try {
+    //console.log("Fetching summary...");
+    ///api/teamMembers/department/{departmentId}
+    const response = await fetch(
+      `${baseUrl}/api/plans/workplans/summary/department/${departmentId}/sections`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        cache: "no-store", // Prevent caching
+      },
+    );
+
+     console.log(response)
+
+    if (response.ok) {
+      const app = await response.json(); // Extract JSON data from the response
+
+      console.log(app)
+
+      return app;
+    } else {
+      throw new Error(`Failed to department summary: ${response.statusText}`);
+    }
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "An unknown error occurred";
+    console.error(errorMessage);
+    throw new Error(errorMessage);
+  }
+
+  // Uncomment these if necessary
+  // revalidatePath("/dashboard/user/applications");
+  // redirect("/dashboard/user/applications");
 }

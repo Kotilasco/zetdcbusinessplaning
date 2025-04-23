@@ -90,7 +90,7 @@ export const deleteFile = async (
     }
 }
 
-export const sendEmail = async (
+/* export const sendEmail = async (
     {
         recipientEmail,
         subject,
@@ -125,4 +125,4 @@ export const sendEmail = async (
     catch (error) {
         handleError(error, "Failed to send email");
     }
-}
+} */

@@ -71,13 +71,13 @@ const dayOfMonth = now.getDate();
 // Get the current week number
 const week = Math.ceil(dayOfMonth / 7);
 
-console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
+//console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
 
     try {
         // console.log("hello filtering");
         // /api/plans/findBy/departmentId/{departmentId}
 
-        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/week${week}/March/${year}`
+        let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/week${week}/${month}/${year}`
 
         // console.log(url)
 
@@ -91,7 +91,7 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
             url = `${process.env.BASE_URL}/api/plans/findAll`
         }
 
-       // console.log(url)
+        console.log(url)
        
         const response = await fetch(
             url,
@@ -109,7 +109,7 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
         if (response.ok) {
          //   console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-       //     console.log(app);
+            console.log(app)
             return app;
         }
     } catch (error: any) {
@@ -120,3 +120,5 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`);
     // revalidatePath("/dashboard/user/applications");
     // redirect("/dashboard/user/applications");
 }
+
+

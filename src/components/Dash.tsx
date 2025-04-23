@@ -97,10 +97,10 @@ export default async function DashboardPage() {
   const revenueDataPromise = fetchRevenueData();
   const departmentData = await getDepartmentWorkSummary();
 
-  let pieData;
+  let pieData = await getPieDataForOverdueDeptTasks();
 
-  role === UserRoles.ROLE_SENIORMANAGER &&
-    (pieData = await getPieDataForOverdueDeptTasks());
+  /*  role === UserRoles.ROLE_SENIORMANAGER &&
+    (pieData = await getPieDataForOverdueDeptTasks()); */
   console.log(pieData);
 
   return (
@@ -127,7 +127,7 @@ export default async function DashboardPage() {
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
               <div className="grid gap-4 ">
-                {/*   <Card className="col-span-4">
+                <Card className="col-span-4">
                   <CardHeader>
                     <CardTitle>
                       {role && hasPermission([role], "create:department") && (
@@ -153,7 +153,7 @@ export default async function DashboardPage() {
                       <Members />
                     )}
                   </CardContent>
-                </Card> */}
+                </Card>
                 {role && hasPermission([role], "division:reports") && (
                   <Card className="col-span-4">
                     <DivisionExpenditureComparison />
@@ -324,17 +324,7 @@ export default async function DashboardPage() {
                   </CardContent>
                 </Card>
               </div>
-              <div className="grid md:grid-cols-2 lg:grid-cols-8">
-                <Card className="col-span-8">
-                  <CardHeader>
-                    <CardTitle>Line Graph</CardTitle>
-                    {/*  <CardDescription>The departments present</CardDescription> */}
-                  </CardHeader>
-                  <CardContent className="pl-2">
-                    <LineGraph departmentData={departmentData} />
-                  </CardContent>
-                </Card>
-              </div>
+
               {role && hasPermission([role], "view:department") && (
                 <div className="grid md:grid-cols-2 lg:grid-cols-8">
                   <Card className="col-span-8">
