@@ -62,6 +62,7 @@ import { hasPermission } from "@/permissions";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
+import { getSectionById } from "@/app/actions/getSectionsFromDepartment";
 
 export const FormSchema = z.object({
   month: z.string({
@@ -100,82 +101,31 @@ export default function SelectForm() {
   // Table reference for printing
   const tableRef = useRef(null);
 
-  // Export table as PDF
-  const exportAsPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Work Plans", 14, 10);
+  const now = new Date();
 
-    // Use jsPDF's autoTable plugin to generate a table
-    /*  autoTable(doc, {
-      html: tableRef.current,
-      startY: 20,
-      theme: "grid", // Apply a grid style
-      headStyles: { fillColor: [0, 102, 204] }, // Change header color
-      margin: { top: 20 },
-    }); */
-    const table = document.getElementById("data-table"); // Reference the table by ID
-    if (!table) {
-      console.error("Table element not found!");
-      return; // Stop execution if the table is missing
-    }
-    autoTable(doc, {
-      html: table,
-      startY: 20,
-      styles: { overflow: "linebreak", cellPadding: 3 }, // Wrap long text
-      columnStyles: {
-        2: { cellWidth: 50 }, // Adjust column width for "Scope"
-        3: { cellWidth: 70 }, // Adjust column width for "Team Members"
-      },
-    });
+  // Get the current year
+  const year = now.getFullYear();
 
-    // Save the PDF
-    const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
-    doc.save(fileName);
-  };
+  // Get the current month name
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const month = monthNames[now.getMonth()];
+  const dayOfMonth = now.getDate();
 
-  // Export table as Excel
-  const exportAsExcel = () => {
-    const table = /* document.getElementById("data-table"); */ tableRef.current;
-    const workbook = XLSX.utils.table_to_book(table, { sheet: "WorkPlans" });
-    const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.xlsx`;
-    XLSX.writeFile(workbook, fileName);
-    // XLSX.writeFile(workbook, "WorkPlans.xlsx");
-  };
-
-  // Print the table
-  const handlePrint = () => {
-    const tableHTML = tableRef.current.outerHTML;
-
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Work Plans</title>
-          <style>
-            table {
-              width: 100%;
-              border-collapse: collapse;
-            }
-            th, td {
-              border: 1px solid black;
-              padding: 8px;
-              text-align: left;
-            }
-            th {
-              background-color: black;
-              color: white;
-            }
-          </style>
-        </head>
-        <body>
-          <h1>Work Plans</h1>
-          ${tableHTML}
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
-  };
+  // Get the current week number
+  const week = Math.ceil(dayOfMonth / 7);
 
   const role = useCurrentRole();
 
@@ -184,6 +134,7 @@ export default function SelectForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [members, setMembers] = useState(null);
+  const [section, setSection] = useState(null);
 
   const teamMembers = [
     { id: "1", name: "Alice" },
@@ -206,6 +157,23 @@ export default function SelectForm() {
     const { name, value } = e.target;
     setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
   };
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getSectionById();
+
+        setSection(response);
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -278,6 +246,98 @@ export default function SelectForm() {
     });
   }
 
+  // Export table as PDF
+  const exportAsPDF = () => {
+    const doc = new jsPDF();
+
+    // Add logo
+    const logoUrl = "/images/logo/zetdc.png"; // Your logo file in public folder or external URL
+    const img = new Image();
+    img.src = logoUrl;
+    img.onload = () => {
+      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
+
+      // Add a header after the logo
+      doc.setFontSize(18);
+      doc.text(
+        `Work Plans Module For ${month} ${year}`,
+        50,
+        20,
+      ); // Adjust x and y position
+
+      doc.setFontSize(14);
+      doc.text(`Section: ${section?.name}`, 50, 30); // Adjust x and y position
+
+      // Draw a line under the header
+      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
+
+      // Reference the table and ensure it exists
+      const table = document.getElementById("data-table");
+      if (!table) {
+        console.error("Table element not found!");
+        return;
+      }
+
+      // Use autoTable to add the table content
+      autoTable(doc, {
+        html: table,
+        startY: 40, // Adjust to prevent overlap with the header
+        styles: { overflow: "linebreak", cellPadding: 3 },
+        columnStyles: {
+          2: { cellWidth: 50 }, // Adjust column width for "Scope"
+          3: { cellWidth: 70 }, // Adjust column width for "Team Members"
+        },
+      });
+
+      // Save the PDF
+      const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
+      doc.save(fileName);
+    };
+  };
+
+  // Export table as Excel
+  const exportAsExcel = () => {
+    const table = /* document.getElementById("data-table"); */ tableRef.current;
+    const workbook = XLSX.utils.table_to_book(table, { sheet: "WorkPlans" });
+    const fileName = `WorkPlans_${new Date().toISOString().split("T")[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    // XLSX.writeFile(workbook, "WorkPlans.xlsx");
+  };
+
+  // Print the table
+  const handlePrint = () => {
+    const tableHTML = tableRef.current.outerHTML;
+
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(`
+        <html>
+          <head>
+            <title>Work Plans</title>
+            <style>
+              table {
+                width: 100%;
+                border-collapse: collapse;
+              }
+              th, td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: left;
+              }
+              th {
+                background-color: black;
+                color: white;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>Work Plans</h1>
+            ${tableHTML}
+          </body>
+        </html>
+      `);
+    printWindow.document.close();
+    printWindow.print();
+  };
   return (
     <DefaultLayout>
       <div className="p-4">

@@ -49,6 +49,9 @@ import { getPieDataForOverdueDeptTasks } from "@/app/actions/getOverdueTaskForDe
 import DashboardWithFilters from "./DashboardGraphs/DashboardWithFilters";
 import Landing from "./DashboardGraphs/Landing";
 import DivisionExpenditureComparison from "./AdminDashboard/DivisionExpenditureComparison";
+import ManagerMemberOverview from "./Charts/manager-member-overview";
+import { PaymentsOverview } from "./Charts/payments-overview";
+import DonutChart from "./Charts/pie-drill";
 
 // Simulate a server-side data fetch (replace with your actual fetch logic)
 async function fetchRevenueData() {
@@ -140,6 +143,10 @@ export default async function DashboardPage() {
                       {role && hasPermission([role], "view:department") && (
                         <p>Department Team Members</p>
                       )}
+
+                      {role && hasPermission([role], "division:reports") && (
+                        <p>Department Overview</p>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pl-2">
@@ -152,8 +159,13 @@ export default async function DashboardPage() {
                     {role && hasPermission([role], "view:department") && (
                       <Members />
                     )}
+
+                    {role && hasPermission([role], "division:reports") && (
+                      <ManagerMemberOverview />
+                    )}
                   </CardContent>
                 </Card>
+
                 {role && hasPermission([role], "division:reports") && (
                   <Card className="col-span-4">
                     <DivisionExpenditureComparison />
@@ -345,7 +357,8 @@ export default async function DashboardPage() {
               <div className="grid gap-4 ">
                 {role && hasPermission([role], "division:reports") && (
                   <Card className="col-span-4">
-                    <Landing />
+                    {/* <Landing /> */}
+                    <DonutChart />
                   </Card>
                 )}
               </div>

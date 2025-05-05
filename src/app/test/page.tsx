@@ -1,6 +1,8 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 import { CampaignVisitors } from "@/components/Charts/campaign-visitors";
 import { PaymentsOverview } from "@/components/Charts/payments-overview";
+import { PayOverview } from "@/components/Charts/pie";
+import DonutChart from "@/components/Charts/pie-drill";
 import { UsedDevices } from "@/components/Charts/used-devices";
 import { createTimeFrameExtractor } from "@/utils/timeframe-extractor";
 import { Metadata } from "next";
@@ -16,9 +18,7 @@ type PropsType = {
 };
 
 export default async function Page(props: PropsType) {
-  const selected_time_frame = "used_devices:monthly";
-
-  console.log("selected_time_frame", selected_time_frame);
+  const { selected_time_frame } = await props.searchParams;
   const extractTimeFrame = createTimeFrameExtractor(selected_time_frame);
 
   return (
@@ -26,12 +26,13 @@ export default async function Page(props: PropsType) {
       <Breadcrumb pageName="Basic Chart" />
 
       <div className="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">
-        <UsedDevices
+        {/* <PayOverview
           key={extractTimeFrame("used_devices")}
           timeFrame={extractTimeFrame("used_devices")?.split(":")[1]}
           className="col-span-12 xl:col-span-5"
-        />
+        /> */}
 
+        <DonutChart />
         {/* <div className="col-span-12 xl:col-span-5">
           <PaymentsOverview />
         </div>

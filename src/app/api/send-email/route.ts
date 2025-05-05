@@ -44,6 +44,19 @@ async function sendEmail(
   });
 }
 
+function escapeXml(unsafe) {
+  return unsafe.replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '\'': return '&apos;';
+      case '"': return '&quot;';
+    }
+    return c;
+  });
+}
+
 // API route handler
 export const POST = async (req: NextRequest) => {
   try {
@@ -65,7 +78,11 @@ export const POST = async (req: NextRequest) => {
     const domain = process.env.EWS_DOMAIN || "";
     const url = process.env.EWS_URL as string;
 
-    console.log(username, password, url);
+    console.log(message)
+
+    const encodedMessage = escapeXml(message);
+
+    console.log(encodedMessage);
 
     // SOAP request payload
     const xmlRequest = `
@@ -80,7 +97,7 @@ export const POST = async (req: NextRequest) => {
             <m:Items>
               <t:Message>
                 <t:Subject>${subject}</t:Subject>
-                <t:Body BodyType="Text">${message}</t:Body>
+                <t:Body BodyType="HTML">${encodedMessage}</t:Body>
                 <t:ToRecipients>
                   <t:Mailbox>
                     <t:EmailAddress>${recipientEmail}</t:EmailAddress>

@@ -2,185 +2,248 @@
 
 "use client";
 
-import DefaultLayout from "@/components/Layouts/DefaultLaout";
-import React, { useEffect, useState } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-import { getDivisionComparison } from "../actions/getDivisionComparisons";
+import { useState, useEffect } from "react";
+import ManagersBarChart from "@/components/Charts/managers-overview/chart";
+import TeamMembersBarChart from "@/components/Charts/members-overviews";
+import { getManagerOverviewForDepartment } from "../actions/managers-overview";
+import { getTeamOverviewForSection } from "../actions/teamMembersOverview";
+import { getDepartmentsByDivisionId } from "../actions/getDepartmentsByDivisionId";
 
-// Combine USD and ZWG data by week
-const combinedData = [
-  {
-    week: "week1",
-    budgetUSD: 4022,
-    actualUSD: 470,
-    differenceUSD: -3552,
-    budgetZWG: 50982,
-    actualZWG: 5940,
-    differenceZWG: -45042,
-  },
-  {
-    week: "week2",
-    budgetUSD: 4680,
-    actualUSD: 100,
-    differenceUSD: -4580,
-    budgetZWG: 59280,
-    actualZWG: 1270,
-    differenceZWG: -58010,
-  },
-  {
-    week: "week3",
-    budgetUSD: 7641,
-    actualUSD: 3625,
-    differenceUSD: -4016,
-    budgetZWG: 96720,
-    actualZWG: 45812,
-    differenceZWG: -50908,
-  },
-  {
-    week: "week4",
-    budgetUSD: 8900,
-    actualUSD: 5000,
-    differenceUSD: -3900,
-    budgetZWG: 110000,
-    actualZWG: 60000,
-    differenceZWG: -50000,
-  },
-];
+const Dashboard = () => {
+  const [selectedSection, setSelectedSection] = useState<number | null>(null);
+  const [managersData, setManagersData] = useState<any[]>([]);
+  const [teamData, setTeamData] = useState<any[]>([]); // Store team data as an array
+  const [loadingTeamData, setLoadingTeamData] = useState<boolean>(false);
+  const [departments, setDepartments] = useState<any[]>([]);
 
-export default function CurrencyComparisonGraphs() {
+  // Filters with only default departmentId
   const [filters, setFilters] = useState({
-    month: "March",
-    year: "2025",
-    currency: "USD",
+    departmentId: "",
+    month: "",
+    week: "",
+    year: "",
   });
 
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#FF4560", "#0088FE"];
-
-  // Fetch data from the backend
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await getDivisionComparison({});
-      console.log(response);
-      setData(response);
-    } catch (err) {
-      setError("Failed to fetch data. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch data on component mount and when filters change
   useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const departmentsData = await getDepartmentsByDivisionId();
+        setDepartments(departmentsData?.assignedDepartments || []);
+
+        // Ensure the first department is set as default only when it's loaded
+        if (departmentsData?.assignedDepartments?.length > 0) {
+          setFilters((prevFilters) => ({
+            ...prevFilters,
+            departmentId: departmentsData.assignedDepartments[0].id, // First department
+          }));
+        }
+      } catch (error) {
+        console.error("Error fetching departments:", error);
+      }
+    };
+
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    if (!filters.departmentId) return; // Ensure departmentId is set
+    if (departments.length === 0) return; // Ensure departments are loaded before fetching
+
+    const fetchData = async () => {
+      try {
+        const requestFilters = Object.fromEntries(
+          Object.entries(filters).filter(([_, value]) => value), // Removes empty values
+        );
+
+        const data = await getManagerOverviewForDepartment(requestFilters);
+        setManagersData(data);
+      } catch (error) {
+        console.error("Error fetching managers data:", error);
+      }
+    };
+
     fetchData();
-  }, [filters]);
+  }, [filters, departments]); // Re-fetch when filters or departments change
 
-  const handleFilterChange = (event) => {
-    const { name, value } = event.target;
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
+  // Fetch managers data
+  /*  useEffect(() => {
+    const fetchManagersData = async () => {
+      try {
+        const data =
+          (await getManagerOverviewForDepartment({
+            departmentId: "1",
+          })) || []; // Fallback to an empty array if data is null or undefined
 
-  if (loading) {
-    return <div className="p-6 text-center">Loading...</div>;
-  }
+        console.log("Fetched managers data:", data); // Debugging log
+        setManagersData(data);
+      } catch (err) {
+        console.error("Error fetching managers data:", err);
+        setManagersData([]); // Ensure managersData is reset to an empty array on error
+      }
+    };
 
-  if (error) {
-    return <div className="p-6 text-center text-red-500">{error}</div>;
-  }
+    fetchManagersData();
+  }, []); */
 
-  // console.log(data);
+  // Fetch team data when a section is selected
+  useEffect(() => {
+    if (selectedSection === null) {
+      return; // Do not fetch if no section is selected
+    }
 
-  if (!data || !data.weeklyData || data.weeklyData.length <= 0) {
-    return <div className="p-6 text-center">No data available.</div>;
-  }
+    const fetchTeamData = async () => {
+      setLoadingTeamData(true); // Start loading indicator
+      try {
+        const requestFilters = Object.fromEntries(
+          Object.entries({ ...filters, sectionId: selectedSection }).filter(
+            ([_, value]) => value,
+          ),
+        );
+
+        console.log("Request filters for team data:", requestFilters); // Debugging log
+
+        const data = await getTeamOverviewForSection(requestFilters);
+        setTeamData(data);
+      } catch (err) {
+        console.error("Error fetching team data:", err);
+        setTeamData([]); // Reset teamData to an empty array on error
+      } finally {
+        setLoadingTeamData(false); // Stop loading indicator
+      }
+    };
+
+    fetchTeamData();
+  }, [selectedSection]);
+
+  console.log("Managers data:", managersData); // Debugging log
+  console.log("Team data:", departments); // Debugging log
+  console.log("Selected section:", selectedSection); // Debugging log
+
   return (
     <div>
-      {/* Budget Comparison */}
-      <h2>Budget Comparison</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data?.weeklyData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="week" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="budgetUSD"
-            stroke="#8884d8"
-            name="Budget (USD)"
-          />
-          <Line
-            type="monotone"
-            dataKey="budgetZWG"
-            stroke="#82ca9d"
-            name="Budget (ZWG)"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      {/* Dropdowns */}
+      <div className="mb-4 flex gap-4">
+        {/* Fetch department dynamically */}
+        <select
+          value={filters.departmentId} // Ensures correct selection by default
+          onChange={(e) =>
+            setFilters({ ...filters, departmentId: e.target.value })
+          }
+        >
+          {departments.length > 0 ? (
+            departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}
+              </option>
+            ))
+          ) : (
+            <option>Loading departments...</option>
+          )}
+        </select>
 
-      {/* Actual Comparison */}
-      <h2>Actual Comparison</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={combinedData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="week" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="actualUSD"
-            stroke="#8884d8"
-            name="Actual (USD)"
-          />
-          <Line
-            type="monotone"
-            dataKey="actualZWG"
-            stroke="#82ca9d"
-            name="Actual (ZWG)"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        {/* Optional filters */}
+        <select
+          className="w-full rounded-md border border-gray-300 bg-white px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring focus:ring-blue-300"
+          onChange={(e) =>
+            setFilters({ ...filters, departmentId: e.target.value })
+          }
+        >
+          <option value="">Select Month</option>
+          {[
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+          ].map((month) => (
+            <option key={month} value={month}>
+              {month}
+            </option>
+          ))}
+        </select>
 
-      {/* Difference Comparison */}
-      <h2>Difference Comparison</h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={combinedData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="week" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="differenceUSD"
-            stroke="#8884d8"
-            name="Difference (USD)"
+        <select
+          onChange={(e) =>
+            setFilters({ ...filters, week: e.target.value || "" })
+          }
+        >
+          <option value="">Select Week</option>
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4">Week 4</option>
+        </select>
+
+        <select
+          onChange={(e) =>
+            setFilters({ ...filters, year: e.target.value || "" })
+          }
+        >
+          <option value="">Select Year</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+        </select>
+      </div>
+
+      {/* Display Managers Chart or Drill-down */}
+      {!selectedSection ? (
+        managersData.length > 0 ? (
+          <ManagersBarChart
+            data={managersData}
+            onBarClick={setSelectedSection}
           />
-          <Line
-            type="monotone"
-            dataKey="differenceZWG"
-            stroke="#82ca9d"
-            name="Difference (ZWG)"
-          />
-        </LineChart>
-      </ResponsiveContainer>
+        ) : (
+          <p>Loading managers data...</p>
+        )
+      ) : (
+        <div>
+          <button
+            onClick={() => setSelectedSection(null)}
+            className="mb-3 bg-blue-500 px-3 py-2 text-white"
+          >
+            ← Back
+          </button>
+          <TeamMembersBarChart data={teamData || []} />
+        </div>
+      )}
     </div>
   );
-}
+  {
+    /* <div>
+      {!selectedSection ? (
+        managersData.length > 0 ? (
+          <ManagersBarChart
+            data={managersData}
+            onBarClick={setSelectedSection}
+          />
+        ) : (
+          <p>Loading managers data...</p>
+        )
+      ) : (
+        <div>
+          <button
+            onClick={() => setSelectedSection(null)}
+            className="mb-3 bg-blue-500 px-3 py-2 text-white"
+          >
+            ← Back
+          </button>
+          {loadingTeamData ? (
+            <p>Loading team data...</p>
+          ) : (
+            <TeamMembersBarChart data={teamData || []} />
+          )}
+        </div>
+      )}
+    </div>
+  ); */
+  }
+};
+
+export default Dashboard;

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { getSectionById } from "@/app/actions/getSectionsFromDepartment";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
@@ -68,6 +69,8 @@ import {
   CalendarIcon,
   Currency,
   Delete,
+  Paperclip,
+  PaperclipIcon,
   Pencil,
   PlusIcon,
   TimerResetIcon,
@@ -99,6 +102,7 @@ import WeeklyExpenditureBarChart from "@/components/DashboardGraphs/MonthlyBarCh
 import WeeklyBudgetDonutChart from "@/components/DashboardGraphs/WeeklyDonutChart";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useSearchParams } from "next/navigation";
 import * as XLSX from "xlsx";
 
 /* export const FormSchema = z.object({
@@ -186,6 +190,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   const [isPending, startTransition] = useTransition();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null); // State for date picker
   const [status, setStatus] = useState(""); // State for dropdown status
+  const [section, setSection] = useState(null); // State for section data
 
   const handleConfirm = async (id: number) => {
     console.log(id);
@@ -275,37 +280,133 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   // Table reference for printing
   const tableRef = useRef(null);
 
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getAllWorkPlansFilter({ year, month, week });
+
+        setReports(response);
+      } catch (error: any) {
+        console.log("");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted, year, month, week]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getSectionById();
+
+        setSection(response);
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const pieData = await getWeeklyExpenditureComparison({
+          year,
+          month,
+          week,
+          currency,
+        });
+
+        //console.log(pieData);
+        setPieData(pieData);
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted, year, month, week, currency]);
+
+  function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
+    //console.log(data);
+    startTransition(async () => {
+      await updateWeeklyReport({ ...data, reportId })
+        .then((res) => {
+          //   console.log(res);
+          setSubmitted((prev) => !prev);
+        })
+        .catch((err) => {
+          console.log("");
+          throw new Error(err.message);
+        });
+    });
+  }
+
+  function onReschedule(data: z.infer<typeof FormSchema>, reportId: string) {
+    console.log(data);
+  }
+
   // Export table as PDF
   const exportAsPDF = () => {
     const doc = new jsPDF();
-    doc.text("Work Plans", 14, 10);
 
-    const table = document.getElementById("data-table");
-    if (!table) {
-      console.error("Table element not found!");
-      return;
-    }
+    // Add logo
+    const logoUrl = "/images/logo/zetdc.png"; // Your logo file in public folder or external URL
+    const img = new Image();
+    img.src = logoUrl;
+    img.onload = () => {
+      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
 
-    // Extract headers excluding "Actions"
-    const headers = [...table.querySelectorAll("th")]
-      .filter((header) => header.innerText.trim() !== "Actions")
-      .map((header) => header.innerText);
+      // Add a header after the logo
+      doc.setFontSize(18);
+      doc.text(`Report For Week ${week} of ${month} ${year}`, 50, 20); // Adjust x and y position
 
-    // Extract row data excluding "Actions"
-    const rows = [...table.querySelectorAll("tr")].map((row) =>
-      [...row.querySelectorAll("td")]
-        .filter((cell) => cell.cellIndex !== 8) // Adjust index if needed
-        .map((cell) => cell.innerText),
-    );
+      doc.setFontSize(14);
+      doc.text(`Section: ${section?.name}`, 50, 30); // Adjust x and y position
 
-    autoTable(doc, {
-      head: [headers],
-      body: rows.filter((row) => row.length > 0),
-      startY: 20,
-    });
+      // Draw a line under the header
+      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
 
-    const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
-    doc.save(`WorkPlans_${timestamp}.pdf`);
+      // Reference the table and ensure it exists
+      const table = document.getElementById("data-table");
+      if (!table) {
+        console.error("Table element not found!");
+        return;
+      }
+
+      // Use autoTable to add the table content
+      autoTable(doc, {
+        html: table,
+        startY: 40,
+        styles: { overflow: "linebreak", cellPadding: 3 },
+        columnStyles: {
+          0: { halign: "left" }, // Left-align text
+          1: { halign: "center" },
+          2: { halign: "right" },
+        },
+        didParseCell: function (data) {
+          if (data.column.index === 8) {
+            // Assuming "Actions" is the last column
+            data.cell.styles.fillColor = [255, 255, 255]; // Hide by setting white background
+            data.cell.text = ""; // Remove text
+          }
+        },
+      });
+
+      // Save the PDF
+      const fileName = `WorkPlans_${new Date().toISOString()}.pdf`;
+      doc.save(fileName);
+    };
   };
 
   // Export table as Excel
@@ -384,65 +485,16 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
     printWindow.print();
   };
 
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchData = async () => {
-      try {
-        const response = await getAllWorkPlansFilter({ year, month, week });
+  const searchParams = useSearchParams();
 
-       
-        setReports(response);
-      } catch (error: any) {
-        console.log("");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const filters = {
+    year: year || "2025",
+    month: month || "January",
+    week: week || "week1",
+    currency: currency || "USD",
+  };
 
-    fetchData();
-  }, [submitted, year, month, week]);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const fetchData = async () => {
-      try {
-        const pieData = await getWeeklyExpenditureComparison({
-          year,
-          month,
-          week,
-          currency,
-        });
-
-        console.log(pieData);
-        setPieData(pieData);
-      } catch (error: any) {
-        console.log(error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [submitted, year, month, week, currency]);
-
-  function onSubmit(data: z.infer<typeof FormSchema>, reportId: string) {
-    //console.log(data);
-    startTransition(async () => {
-      await updateWeeklyReport({ ...data, reportId })
-        .then((res) => {
-          //   console.log(res);
-          setSubmitted((prev) => !prev);
-        })
-        .catch((err) => {
-          console.log("");
-          throw new Error(err.message);
-        });
-    });
-  }
-
-  function onReschedule(data: z.infer<typeof FormSchema>, reportId: string) {
-    console.log(data);
-  }
+  console.log(filters);
 
   return (
     <div className="p-4">
@@ -505,7 +557,13 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
                 ))
               : // Display actual data rows
                 reports?.map((report, index) => (
-                  <tr key={index} className="border">
+                  <tr
+                    key={index}
+                    className="cursor-pointer border transition hover:bg-gray-100"
+                    onClick={() =>
+                      (window.location.href = `/work/plan/${report.id}`)
+                    }
+                  >
                     <td className="border p-2">
                       {report.scopes?.map((scope) => scope.details).join(", ")}
                     </td>
@@ -534,7 +592,21 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
                     </td>
                     <td className="border p-2">{report.remarks}</td>
                     {role && hasPermission([role], "update:report") && (
-                      <td className="flex items-center justify-around space-x-1 border p-2">
+                      <td
+                        className="flex items-center justify-around space-x-1 border p-2"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          size={"sm"}
+                          onClick={() =>
+                            (window.location.href = `/work/plan/attach/${report.id}`)
+                          }
+                          className="rounded bg-blue-500 px-3 py-2 text-white transition hover:bg-blue-700"
+                        >
+                          <p className="hidden lg:block">Attach</p>
+                          <PaperclipIcon className="text-white" size={10} />
+                        </Button>
+
                         <div className="">
                           <Sheet>
                             <SheetTrigger asChild>

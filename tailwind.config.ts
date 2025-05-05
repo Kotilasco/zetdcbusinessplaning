@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 import defaultTheme from "tailwindcss/defaultTheme";
 import plugin from 'tailwindcss/plugin'
+import colors from 'tailwindcss/colors'
 
 const config: Config = {
 	content: [
@@ -43,6 +44,10 @@ const config: Config = {
 					'8': '#E5E7EB',
 					DEFAULT: '#111928'
 				},
+				brand: {
+					'100': '#EA6365',
+					DEFAULT: '#FA7275'
+				  },
 				gray: {
 					'1': '#F9FAFB',
 					'2': '#F3F4F6',
@@ -80,6 +85,12 @@ const config: Config = {
 						DEFAULT: '#F56060'
 					}
 				},
+				light: {
+					'100': '#333F4E',
+					'200': '#A3B2C7',
+					'300': '#F2F5F9',
+					'400': '#F2F4F8'
+				  },
 				blue: {
 					DEFAULT: '#3C50E0',
 					dark: '#1C3FB7',
@@ -111,6 +122,16 @@ const config: Config = {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				tremor: {
+					brand: {
+					  faint: colors.blue[50],
+					  muted: colors.blue[200],
+					  subtle: colors.blue[400],
+					  DEFAULT: colors.blue[500],
+					  emphasis: colors.blue[700],
+					  inverted: colors.white,
+					},
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -376,6 +397,9 @@ const config: Config = {
 				'card-8': '0px 1px 2px 0px rgba(0, 0, 0, 0.10)',
 				'card-9': '0px 1px 3px 0px rgba(0, 0, 0, 0.08)',
 				'card-10': '0px 2px 3px 0px rgba(0, 0, 0, 0.10)',
+				'drop-1': '0px 10px 30px 0px rgba(66, 71, 97, 0.1)',
+        'drop-2': '0 8px 30px 0 rgba(65, 89, 214, 0.3)',
+        'drop-3': '0 8px 30px 0 rgba(65, 89, 214, 0.1)',
 				switcher: '0px 2px 4px rgba(0, 0, 0, 0.2), inset 0px 2px 2px #FFFFFF, inset 0px -1px 1px rgba(0, 0, 0, 0.1)',
 				'switch-1': '0px 0px 4px 0px rgba(0, 0, 0, 0.10)',
 				'switch-2': '0px 0px 5px 0px rgba(0, 0, 0, 0.15)',

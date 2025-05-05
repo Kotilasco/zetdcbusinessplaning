@@ -1,8 +1,17 @@
+//@ts-nocheck
+
 "use client";
 
 import { getDivisionSummary } from "@/app/actions/departmentWorkSummary";
 import React, { useState, useEffect } from "react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
 const Landing = () => {
   const [filters, setFilters] = useState({
@@ -13,7 +22,20 @@ const Landing = () => {
 
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedData, setSelectedData] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Function to handle pie slice click
+  const handlePieClick = (data) => {
+    setSelectedData(data);
+    setIsModalOpen(true);
+  };
+
+  // Function to close the modal
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
   const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#FF4560", "#0088FE"];
 
@@ -41,7 +63,7 @@ const Landing = () => {
     fetchData();
   }, [filters]);
 
-  const handleFilterChange = (event) => {
+  const handleFilterChange = (event: any) => {
     const { name, value } = event.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
@@ -56,7 +78,7 @@ const Landing = () => {
 
   console.log(data);
 
-  if (!data || !data.departments) {
+  if (!data || !data?.departments) {
     return <div className="p-6 text-center">No data available.</div>;
   }
 
@@ -134,14 +156,64 @@ const Landing = () => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
+                      onClick={(event, data) => handlePieClick(data)}
                       label
                     >
                       <Cell fill="#00C49F" />
                       <Cell fill="#FF8042" />
                     </Pie>
                     <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
                   </PieChart>
                 </ResponsiveContainer>
+
+                {/* Inline Modal */}
+                {isModalOpen && selectedData && (
+                  <div
+                    style={{
+                      position: "fixed",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      background: "white",
+                      padding: "20px",
+                      boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
+                      zIndex: 1000,
+                      width: "400px", // Set modal width
+                    }}
+                  >
+                    <button onClick={closeModal} style={{ float: "right" }}>
+                      ❌
+                    </button>
+                    <h4>Details for {selectedData?.name}</h4>
+                    <ResponsiveContainer width="100%" height={200}>
+                      <PieChart>
+                        <Pie
+                          data={[
+                            {
+                              name: "Subcategory A",
+                              value: selectedData?.value / 2,
+                            },
+                            {
+                              name: "Subcategory B",
+                              value: selectedData?.value / 2,
+                            },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          fill="#82ca9d"
+                          dataKey="value"
+                          label
+                        >
+                          <Cell fill="#FFBB28" />
+                          <Cell fill="#FF8042" />
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
               </div>
 
               {/* Task Progress Pie Chart */}
@@ -171,6 +243,7 @@ const Landing = () => {
                       ))}
                     </Pie>
                     <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -199,6 +272,7 @@ const Landing = () => {
                       <Cell fill="#00C49F" />
                     </Pie>
                     <Tooltip />
+                    <Legend verticalAlign="bottom" height={36} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

@@ -41,9 +41,11 @@ export async function getDepartmentsByDivisionId() {
             cache: "no-store", // Prevent caching
         });
 
+        console.log("Response status:", response.status); // Log the response status
+
         if (response.ok) {
             const app = await response.json(); // Extract JSON data from the response
-//console.log("Departments fetched successfully:", app);
+console.log("Departments fetched successfully:", app);
             return app;
         } else {
             throw new Error(`Failed to fetch departments: ${response.statusText}`);

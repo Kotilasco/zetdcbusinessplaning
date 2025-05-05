@@ -17,9 +17,31 @@ import {
 } from "recharts";
 
 export default function DivisionExpenditureComparison() {
+  const now = new Date();
+
+  // Get the current year
+  const now_year = now.getFullYear();
+
+  // Get the current month name
+  const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const now_month = monthNames[now.getMonth()];
+
   const [filters, setFilters] = useState({
-    month: "March",
-    year: "2025",
+    month: now_month,
+    year: now_year,
   });
 
   const [data, setData] = useState(null);

@@ -85,6 +85,76 @@
     @apply h-[calc(100vh_-_8.125rem)] lg:h-[calc(100vh_-_5.625rem)];
   }
 }
+.body-1 {
+  @apply text-[16px] leading-[24px] font-normal;
+}
+.body-2 {
+  @apply text-[14px] leading-[20px] font-normal;
+}
+.button {
+  @apply text-[14px] leading-[20px] font-medium;
+}
+.primary-btn {
+  @apply bg-brand hover:bg-brand-100 transition-all rounded-full button !important;
+}
+.subtitle-1 {
+  @apply text-[16px] leading-[24px] font-medium;
+}
+.subtitle-2 {
+  @apply text-[14px] leading-[20px] font-semibold;
+}
+
+
+  /* =====  SHADCN OVERRIDES */
+  .shad-no-focus {
+    @apply outline-none ring-offset-transparent focus:ring-transparent focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
+  }
+  .shad-input {
+    @apply border-none shadow-none p-0 shad-no-focus placeholder:text-light-200 body-2 !important;
+  }
+
+  .shad-form-item {
+    @apply flex h-[78px] flex-col justify-center rounded-xl border border-light-300 px-4 shadow-drop-1;
+  }
+  .shad-form-label {
+    @apply text-light-100 pt-2 body-2 w-full !important;
+  }
+  .shad-form-message {
+    @apply text-red body-2 ml-4 !important;
+  }
+  .shad-alert-dialog {
+    @apply space-y-4 max-w-[95%] sm:w-fit rounded-xl md:rounded-[30px] px-4 md:px-8 py-10 bg-white outline-none !important;
+  }
+  .shad-submit-btn {
+    @apply bg-brand button hover:bg-brand-100 transition-all rounded-full !important;
+  }
+  .shad-otp {
+    @apply w-full flex gap-1 sm:gap-2 justify-between !important;
+  }
+  .shad-otp-slot {
+    @apply text-[40px] font-medium rounded-xl ring-brand shadow-drop-1 text-brand-100 justify-center flex border-2 border-light-300 size-12 md:size-16 gap-5 !important;
+  }
+
+  .shad-sheet {
+    @apply pt-0 !important;
+  }
+  .shad-sheet button,
+  .shad-dialog button {
+    @apply focus:ring-0 focus:ring-offset-0 focus-visible:border-none outline-none focus-visible:outline-none focus-visible:ring-transparent focus-visible:ring-offset-0 !important;
+  }
+  .shad-dropdown-item {
+    @apply cursor-pointer !important;
+  }
+  .shad-dialog {
+    @apply rounded-[26px] w-[90%] max-w-[400px] px-6 py-8   !important;
+  }
+  .shad-chart-title {
+    @apply text-white !important;
+  }
+  .shad-select-item {
+    @apply cursor-pointer !important;
+  }
+
 
 /* third-party libraries CSS */
 
@@ -194,6 +264,91 @@
 .nav-link:hover,
 .dropdown-item:hover {
   text-decoration: none !important;
+}
+
+/* FileUploader */
+.uploader-button {
+  @apply primary-btn shadow-drop-1 h-[52px] gap-2 px-10 !important;
+}
+.uploader-preview-list {
+  @apply shadow-drop-3 fixed bottom-10 right-10 z-50 flex size-full h-fit max-w-[480px] flex-col gap-3 rounded-[20px] bg-indigo-800 p-7 !important;
+}
+.uploader-preview-item {
+  @apply shadow-drop-3 flex items-center  justify-between gap-3 rounded-xl p-3 !important;
+}
+.preview-item-name {
+  @apply subtitle-2 mb-2 line-clamp-1 max-w-[300px] !important;
+}
+
+.error-toast {
+  @apply !rounded-[10px] bg-red !important;
+}
+
+.file-card {
+  @apply hover:shadow-drop-3 flex cursor-pointer flex-col gap-6 rounded-[18px] bg-white p-5 shadow-sm transition-all !important;
+}
+.file-card-details {
+  @apply text-light-100 flex flex-col gap-2 !important;
+}
+
+.dashboard-recent-files {
+  @apply h-full rounded-[20px] bg-white p-5 xl:p-8 !important;
+}
+.recent-file-details {
+  @apply flex w-full flex-col xl:flex-row xl:justify-between !important;
+}
+.recent-file-name {
+  @apply subtitle-2 text-light-100 line-clamp-1 w-full sm:max-w-[200px] lg:max-w-[250px] !important;
+}
+.recent-file-date {
+  @apply body-2 text-light-100/80 !important;
+}
+.empty-list {
+  @apply body-1 text-light-200 mt-10 text-center !important;
+}
+.file-list {
+  @apply grid w-full gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 !important;
+}
+
+/* ActionsDropdown */
+.rename-input-field {
+  @apply body-2 shad-no-focus shadow-drop-1 h-[52px] w-full rounded-full border px-4 !important;
+}
+.delete-confirmation {
+  @apply text-light-100 text-center !important;
+}
+.delete-file-name {
+  @apply text-brand-100 font-medium !important;
+}
+.modal-cancel-button {
+  @apply text-light-100 h-[52px] flex-1 rounded-full bg-white hover:bg-transparent !important;
+}
+.modal-submit-button {
+  @apply primary-btn !mx-0 h-[52px] w-full flex-1 !important;
+}
+
+/* ActionsModalContent */
+.file-details-thumbnail {
+  @apply border-light-200/40 bg-light-400/50 !mb-1 flex items-center gap-3 rounded-xl border p-3 !important;
+}
+.file-details-label {
+  @apply body-2 text-light-100 w-[30%] !important;
+}
+.file-details-value {
+  @apply subtitle-2 flex-1 !important;
+}
+
+.share-wrapper {
+  @apply !mt-2 space-y-2 !important;
+}
+.share-input-field {
+  @apply body-2 shad-no-focus shadow-drop-1 h-[52px] w-full rounded-full border px-4 !important;
+}
+.share-remove-user {
+  @apply text-light-100 rounded-full bg-transparent shadow-none hover:bg-transparent !important;
+}
+.remove-icon {
+  @apply aspect-square rounded-full !important;
 }
 
 /* div {

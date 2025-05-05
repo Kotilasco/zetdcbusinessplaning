@@ -1,79 +1,71 @@
 //@ts-nocheck
 
-import { useEffect, useState, useTransition } from "react";
+"use client";
 
-import DefaultLayout from "@/components/Layouts/DefaultLaout";
-
-/* export default async function TaskInfo({ params }: any) {
-  return (
-    <DefaultLayout>
-      <div className="p-4"></div>
-    </DefaultLayout>
-  );
-} */
+import { useEffect, useState } from "react";
 import React from "react";
 import { useRouter } from "next/navigation";
-import {
-  getAllWorkPlanById,
-  getAllWorkPlanByScopeId,
-} from "@/app/actions/getWorkPlans";
+import { getAllWorkPlanById } from "@/app/actions/getWorkPlans";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
+import FileCard from "@/components/FileCard";
+import DefaultLayout from "@/components/Layouts/DefaultLaout";
+import { getFiles } from "@/lib/actions/file.actions";
 
-export default async function TaskDetails({ params }: any) {
-  // const router = useRouter();
-  // Mock data with a single scope
-  /* const data = {
-    id: 4,
-    createdAt: "2025-02-19T15:12:21.111108",
-    createdBy: "lsimoyi@zetdc.com",
-    updatedAt: "2025-02-19T15:12:21.111108",
-    updatedBy: "lsimoyi@zetdc.com",
-    month: "february",
-    week: "week4",
-    year: "2025",
-    weeklyTarget: 60,
-    actualWorkDone: 30,
-    percentageComplete: 10,
-    actualExpenditure: 5,
-    percentOfBudget: 10,
-    scopes: [
-      {
-        id: 0,
-        createdAt: "2025-03-05T10:35:32.730Z",
-        details: "This is a task detail",
-        status: "IN_PROGRESS",
-        startDate: "2025-03-05T10:35:32.730Z",
-        targetCompletionDate: "2025-03-10T10:35:32.730Z",
-        actualCompletionDate: null,
-      },
-    ],
-  }; */
+export default function TaskDetails({ params }) {
+  const [data, setData] = useState(null);
+  const [files, setFiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-  const data = await getAllWorkPlanById(params?.id);
-
-  if (!data)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const workPlanData = await getAllWorkPlanById(params?.id);
+        const filesData = await getFiles(params?.id);
+        setData(workPlanData);
+        setFiles(filesData?.documents || []);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [params?.id]);
+  if (loading) {
     return (
       <DefaultLayout>
-        <div>Task not found</div>;
+        <div className="min-h-screen bg-gray-100 p-6">
+          <div className="mb-6 h-8 w-48 animate-pulse rounded-md bg-gray-300"></div>
+          <div className="mb-8 h-32 w-full animate-pulse rounded-md bg-gray-300"></div>
+          <div className="mb-8 grid gap-4 lg:grid-cols-2">
+            <div className="h-32 w-full animate-pulse rounded-md bg-gray-300"></div>
+            <div className="h-32 w-full animate-pulse rounded-md bg-gray-300"></div>
+          </div>
+          <div className="mb-8 h-32 w-full animate-pulse rounded-md bg-gray-300"></div>
+          <div className="h-32 w-full animate-pulse rounded-md bg-gray-300"></div>
+        </div>
       </DefaultLayout>
     );
+  }
+
+  if (!data) {
+    return (
+      <DefaultLayout>
+        <div>Task not found</div>
+      </DefaultLayout>
+    );
+  }
 
   const scope = data?.scopes[0];
 
- // console.log(data);
+  console.log(files);
 
   return (
     <DefaultLayout>
       <div className="min-h-screen bg-gray-100 p-6">
-        {/*  <button
-        onClick={() => router.back()} // Go to the previous page
-        className="mb-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-      >
-        ← Back
-      </button> */}
-        {/* Page Header */}
         <header className="mb-6 rounded-md bg-white p-4 shadow-md">
           <h1 className="text-3xl font-extrabold text-gray-800">
             Task Details
@@ -82,8 +74,6 @@ export default async function TaskDetails({ params }: any) {
             Analyzing and monitoring your tasks
           </p>
         </header>
-
-        {/* Scope Section */}
         <section className="mb-8 rounded-md bg-white p-4 shadow-md">
           <h2 className="mb-4 text-xl font-semibold text-gray-700">
             Scope Details
@@ -103,8 +93,6 @@ export default async function TaskDetails({ params }: any) {
             {new Date(scope?.targetCompletionDate).toDateString()}
           </p>
         </section>
-
-        {/* Task Information Section */}
         <section className="mb-8 grid gap-4 lg:grid-cols-2">
           <div className="rounded-md bg-white p-4 shadow-md">
             <h2 className="mb-2 text-xl font-semibold text-gray-700">
@@ -120,7 +108,6 @@ export default async function TaskDetails({ params }: any) {
               <strong>Year:</strong> {data?.year}
             </p>
           </div>
-
           <div className="rounded-md bg-white p-4 shadow-md">
             <h2 className="mb-2 text-xl font-semibold text-gray-700">
               Expenditure
@@ -135,33 +122,27 @@ export default async function TaskDetails({ params }: any) {
               ></div>
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              {data?.percentOfBudget || 0}% of Budget Used
+              {parseFloat((data?.percentOfBudget || 0).toFixed(2))}% of Budget
+              Used
             </p>
           </div>
         </section>
-
-        {/* Progress Section */}
         <section className="mb-8 rounded-md bg-white p-4 shadow-md">
           <h2 className="mb-4 text-xl font-semibold text-gray-700">Progress</h2>
           <div className="relative">
             <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gray-200">
-              {/* <div
-                className="absolute h-32 w-32 rounded-full bg-blue-500"
-                style={{
-                  clipPath: `circle(${data.percentageComplete || 0}% at center)`,
-                }}
-              ></div> */}
-
-              <CircularProgress percentage={data.percentageComplete || 0} />
+              <CircularProgress
+                percentage={parseFloat(
+                  (data.percentageComplete || 0).toFixed(2),
+                )}
+              />
             </div>
             <p className="mt-2 text-center font-bold text-gray-800">
-              {data.percentageComplete || 0}%
+              {parseFloat((data.percentageComplete || 0).toFixed(2))}%
             </p>
             <p className="text-center text-sm text-gray-500">Task Completion</p>
           </div>
         </section>
-
-        {/* Team Section */}
         <section className="rounded-md bg-white p-4 shadow-md">
           <h2 className="mb-4 text-xl font-semibold text-gray-700">
             Team Members
@@ -179,63 +160,72 @@ export default async function TaskDetails({ params }: any) {
                   <strong>EcNumber:</strong> {member?.ecNumber}
                 </p>
               </div>
-
               <p className="mx-auto">
                 <Button>
                   <Link href={`/team/members/${member.id}`}>View</Link>
                 </Button>
               </p>
-
               <Separator className="my-2" />
             </div>
           ))}
+        </section>
+        <section className="rounded-md bg-white p-4 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold text-gray-700">
+            Files Uploaded For the Task
+          </h2>
+          {files.length <= 0 ? (
+            <div>
+              <p className="text-gray-600">No files uploaded</p>
+            </div>
+          ) : (
+            <section className="file-list mt-2">
+              {files.length > 0 ? (
+                files?.map((file, i) => <FileCard key={i} file={file} />)
+              ) : (
+                <p className="text-gray-600">No files uploaded</p>
+              )}
+            </section>
+          )}
         </section>
       </div>
     </DefaultLayout>
   );
 }
-
 export function CircularProgress({ percentage }) {
-  const radius = 50; // Radius of the circle
-  const circumference = 2 * Math.PI * radius; // Circumference of the circle
-  const offset = circumference - (percentage / 100) * circumference; // Stroke offset for progress
+  const radius = 50;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
 
   return (
     <div className="relative flex items-center justify-center">
-      {/* SVG Circle */}
       <svg
         className="h-32 w-32 -rotate-90 transform"
         width="100"
         height="100"
         viewBox="0 0 120 120"
       >
-        {/* Background Circle */}
         <circle
           cx="60"
           cy="60"
           r={radius}
           fill="none"
-          stroke="#e5e7eb" // Light gray background
+          stroke="#e5e7eb"
           strokeWidth="10"
         />
-        {/* Progress Circle */}
         <circle
           cx="60"
           cy="60"
           r={radius}
           fill="none"
-          stroke="#3b82f6" // Blue progress color
+          stroke="#3b82f6"
           strokeWidth="10"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
-          strokeLinecap="round"
         />
       </svg>
-
-      {/* Percentage Text */}
-      <span className="absolute text-xl font-bold text-blue-600">
+      <div className="absolute text-center text-2xl font-bold text-gray-700">
         {percentage}%
-      </span>
+      </div>
     </div>
   );
 }

@@ -17,7 +17,7 @@ export async function getListOfOverdueTasks(
 
 
   try {
-   // console.log("hello here we are??");
+    console.log("hello here we are??");
 
     let url = `${process.env.BASE_URL}/api/plans/section-list-overdue/workplans/department/${departmentId}`;
 
@@ -37,7 +37,7 @@ export async function getListOfOverdueTasks(
 
     if (response.ok) {
       let app = await response.json(); // Extract the JSON data from the response
-     
+     console.log(app);
       return app;
     }
   } catch (error: any) {

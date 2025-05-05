@@ -1,0 +1,355 @@
+//@ts-nocheck
+
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
+import { getDivisionSummary } from "@/app/actions/departmentWorkSummary";
+import { getBudgetUsageForEachSection } from "@/app/actions/budgetUsageForEachSection";
+
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#A28DFF",
+  "#FF6F91",
+];
+
+const DonutChart = () => {
+  const [drillData, setDrillData] = useState({}); // Store drill-down data per department
+  const [selectedCategory, setSelectedCategory] = useState({}); // Track selected category per department
+  const [filters, setFilters] = useState({
+    month: "March",
+    year: "2025",
+    currency: "USD",
+  });
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFilterChange = (event: any) => {
+    const { name, value } = event.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePieClick = useCallback(
+    async (entry: any, departmentId: string) => {
+      if (entry.name === "Used") {
+        setLoading(true);
+        setError(null);
+
+        try {
+          const drillDownResponse = await getBudgetUsageForEachSection({
+            month: filters.month,
+            year: filters.year,
+            currency: filters.currency,
+            departmentId: departmentId,
+          });
+          console.log(
+            `Drill-Down Data for ${departmentId}:`,
+            drillDownResponse,
+          );
+
+          const drillDownFormattedData = drillDownResponse.map((section) => ({
+            name: section.sectionName,
+            value: section.percentageUsage,
+          }));
+
+          setDrillData((prev) => ({
+            ...prev,
+            [departmentId]: drillDownFormattedData,
+          }));
+          setSelectedCategory((prev) => ({
+            ...prev,
+            [departmentId]: entry.name,
+          }));
+        } catch (err) {
+          setError(
+            `Failed to fetch drill-down data for ${departmentId}. Please try again.`,
+          );
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    },
+    [
+      filters,
+      getBudgetUsageForEachSection,
+      setLoading,
+      setError,
+      setDrillData,
+      setSelectedCategory,
+    ],
+  );
+
+  const handleBackClick = (departmentId: string) => {
+    setDrillData((prev) => ({ ...prev, [departmentId]: [] }));
+    setSelectedCategory((prev) => ({ ...prev, [departmentId]: null }));
+  };
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await getDivisionSummary({
+        month: filters.month,
+        year: filters.year,
+        currency: filters.currency,
+      });
+      console.log("Main Data:", response);
+      setData(response);
+    } catch (err) {
+      setError("Failed to fetch data. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, getDivisionSummary, setLoading, setError, setData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const formatPercentage = (value) => {
+    if (isNaN(value)) {
+      return "0.0%";
+    }
+    return `${value.toFixed(1)}%`;
+  };
+
+  if (!data || !Array.isArray(data.departments)) {
+    return <div className="p-6 text-center">No data available.</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+      {loading && <div className="text-center">Loading...</div>}
+      {error && <div className="text-center text-red-500">{error}</div>}
+
+      {/* Filters Section */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        {/* ... (Your filter controls) ... */}
+        <select
+          name="month"
+          value={filters.month}
+          onChange={handleFilterChange}
+          className="rounded-md border bg-white px-4 py-2 shadow-sm"
+        >
+          <option>January</option>
+          <option>February</option>
+          <option>March</option>
+          <option>April</option>
+          <option>May</option>
+          <option>June</option>
+          <option>July</option>
+          <option>August</option>
+          <option>September</option>
+          <option>October</option>
+          <option>November</option>
+          <option>December</option>
+        </select>
+        <select
+          name="year"
+          value={filters.year}
+          onChange={handleFilterChange}
+          className="rounded-md border bg-white px-4 py-2 shadow-sm"
+        >
+          <option>2024</option>
+          <option>2025</option>
+          <option>2026</option>
+        </select>
+        <select
+          name="currency"
+          value={filters.currency}
+          onChange={handleFilterChange}
+          className="rounded-md border bg-white px-4 py-2 shadow-sm"
+        >
+          <option value="USD">USD</option>
+          <option value="EUR">EUR</option>
+          <option value="GBP">GBP</option>
+        </select>
+      </div>
+
+      {/* Cards Section */}
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        {data.departments.map((dept) => (
+          <div
+            key={dept.departmentId}
+            className="rounded-lg bg-white p-6 shadow-md"
+          >
+            <h3 className="mb-4 text-lg font-bold">{dept.departmentName}</h3>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 gap-6">
+              {/* Budget Usage Pie Chart */}
+              <div className="relative">
+                <h4 className="mb-2 text-sm font-semibold">Budget Usage</h4>
+                {/* Back Button */}
+                {selectedCategory[dept.departmentId] && (
+                  <button
+                    onClick={() => handleBackClick(dept.departmentId)}
+                    className="absolute left-0 top-0 z-10 rounded bg-blue-500 px-3 py-1 text-xs font-semibold text-white"
+                    style={{ transform: "translateY(-100%)" }}
+                  >
+                    ← Back
+                  </button>
+                )}
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={
+                        !selectedCategory[dept.departmentId]
+                          ? [
+                              { name: "Used", value: dept.percentageBudget },
+                              {
+                                name: "Remaining",
+                                value: 100 - dept.percentageBudget,
+                              },
+                            ]
+                          : drillData[dept.departmentId]
+                      }
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      onClick={(e) =>
+                        e.name === "Used" && // Only allow click on "Used" slice
+                        !selectedCategory[dept.departmentId] &&
+                        handlePieClick(e, dept.departmentId)
+                      }
+                      label={({ percent }) => formatPercentage(percent * 100)}
+                    >
+                      {!selectedCategory[dept.departmentId]
+                        ? [
+                            { name: "Used", value: dept.percentageBudget },
+                            {
+                              name: "Remaining",
+                              value: 100 - dept.percentageBudget,
+                            },
+                          ].map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))
+                        : drillData[dept.departmentId]?.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                    </Pie>
+                    <Legend
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                    />
+                    <Tooltip
+                      formatter={(value) => [
+                        formatPercentage(value),
+                        "Percentage",
+                      ]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Task Progress Pie Chart */}
+              <div>
+                <h4 className="mb-2 text-sm font-semibold">Task Progress</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Complete", value: dept.percentageComplete },
+                        { name: "Pending", value: dept.percentagePending },
+                        {
+                          name: "In Progress",
+                          value: dept.percentageInProgress,
+                        },
+                        { name: "Cancelled", value: dept.percentageCancelled },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ percent }) => formatPercentage(percent * 100)}
+                    >
+                      {COLORS.map((color, index) => (
+                        <Cell key={`cell-${index}`} fill={color} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => [
+                        formatPercentage(value),
+                        "Percentage",
+                      ]}
+                    />
+                    <Legend
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Overdue Tasks Pie Chart */}
+              <div>
+                <h4 className="mb-2 text-sm font-semibold">Overdue Tasks</h4>
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Overdue", value: dept.percentageOverdue },
+                        {
+                          name: "On Time",
+                          value: 100 - dept.percentageOverdue,
+                        },
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ percent }) => formatPercentage(percent * 100)}
+                    >
+                      <Cell fill="#FF4560" />
+                      <Cell fill="#00C49F" />
+                    </Pie>
+                    <Tooltip
+                      formatter={(value) => [
+                        formatPercentage(value),
+                        "Percentage",
+                      ]}
+                    />
+                    <Legend
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default DonutChart;

@@ -9,7 +9,7 @@ export const getFiles = async (folder: string) => {
     );
     console.log(files)
 
-    const applicationId = encodeURIComponent(folder)
+    //const applicationId = encodeURIComponent(folder)
 
     const data = await files.json();
     //console.log(data);

@@ -100,34 +100,54 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
   // Export table as PDF
   const exportAsPDF = () => {
     const doc = new jsPDF();
-    doc.text("Overdue Work Plans", 14, 10);
+    // Add logo
+    const logoUrl = "/images/logo/zetdc.png"; // Your logo file in public folder or external URL
+    const img = new Image();
+    img.src = logoUrl;
+    img.onload = () => {
+      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
 
-    // Use jsPDF's autoTable plugin to generate a table
-    /*  autoTable(doc, {
-          html: tableRef.current,
-          startY: 20,
-          theme: "grid", // Apply a grid style
-          headStyles: { fillColor: [0, 102, 204] }, // Change header color
-          margin: { top: 20 },
-        }); */
-    const table = document.getElementById("data-table"); // Reference the table by ID
-    if (!table) {
-      console.error("Table element not found!");
-      return; // Stop execution if the table is missing
-    }
-    autoTable(doc, {
-      html: table,
-      startY: 20,
-      styles: { overflow: "linebreak", cellPadding: 3 }, // Wrap long text
-      columnStyles: {
-        2: { cellWidth: 50 }, // Adjust column width for "Scope"
-        3: { cellWidth: 70 }, // Adjust column width for "Team Members"
-      },
-    });
+      // Add a header after the logo
+      doc.setFontSize(18);
+      doc.text(
+        `Report For Quarter ${quarter} of ${year} for ${status} tasks`,
+        50,
+        20,
+      ); // Adjust x and y position
 
-    // Save the PDF
-    const fileName = `Overdue_WorkPlans_${new Date().toISOString().split("T")[0]}.pdf`;
-    doc.save(fileName);
+      doc.setFontSize(14);
+      // doc.text(`Section: ${section?.name}`, 50, 30); // Adjust x and y position
+
+      // Draw a line under the header
+      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
+
+      const table = document.getElementById("data-table");
+      if (!table) {
+        console.error("Table element not found!");
+        return;
+      }
+
+      // Extract headers excluding "Actions"
+      const headers = [...table.querySelectorAll("th")]
+        .filter((header) => header.innerText.trim() !== "Actions")
+        .map((header) => header.innerText);
+
+      // Extract row data excluding "Actions"
+      const rows = [...table.querySelectorAll("tr")].map((row) =>
+        [...row.querySelectorAll("td")]
+          .filter((cell) => cell.cellIndex !== 8) // Adjust index if needed
+          .map((cell) => cell.innerText),
+      );
+
+      autoTable(doc, {
+        head: [headers],
+        body: rows.filter((row) => row.length > 0),
+        startY: 40,
+      });
+
+      const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+      doc.save(`WorkPlans_${timestamp}.pdf`);
+    };
   };
 
   // Export table as Excel

@@ -47,7 +47,7 @@ export async function getWeeklyExpenditureComparison(data: WeeklyTableProps = {}
 url = `${process.env.BASE_URL}/api/plans/expenditure/departmentId/${session?.user?.departmentId}/week/${mergedData.week}/month/${mergedData.month}/year/${mergedData.year}/currency/${mergedData.currency}`
         }
 
-       // console.log(url);
+        console.log(url);
         
         const response = await fetch(
             url,
@@ -63,7 +63,7 @@ url = `${process.env.BASE_URL}/api/plans/expenditure/departmentId/${session?.use
         if (response.ok) {
             console.log("Successful");
             let app = await response.json(); // Extract the JSON data from the response
-          //  console.log(app);
+            console.log(app);
             return app;
         }
     } catch (error: any) {

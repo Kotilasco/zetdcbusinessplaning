@@ -7,6 +7,7 @@ import {
     authRoutes,
     publicRoutes,
 } from "@/routes";
+import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
@@ -21,6 +22,22 @@ export default auth((req) => {
     if (nextUrl.pathname === "/api/send-email") {
         return null; // Allow request without authentication
     }
+
+    console.log("Middleware running on:", nextUrl.pathname);
+
+    if (nextUrl.pathname.startsWith("/api/file")) {
+       // console.log("Allowing API request:", nextUrl.pathname);
+        return null; // Allow request without authentication
+      }
+      
+
+
+    if (nextUrl.pathname === "/api/file") {
+       // console.log("Middleware allowing access to /api/file");
+        return null; // Allow request without authentication
+      }
+
+
     if (isApiAuthRoute) {
         return null;
     }

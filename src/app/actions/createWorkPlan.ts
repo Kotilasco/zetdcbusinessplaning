@@ -40,7 +40,7 @@ export async function createWorkPlan(workplan: WorkPlan) {
   "percentOfBudget": 0,
   "status": "IN_PROGRESS",
   "sectionId": session?.user?.sectionId,
-  "divisionId": session?.user?.sectionId,
+  "divisionId": session?.user?.divisionId,
   "departmentId": session?.user?.departmentId,
         "scopes": [
             {

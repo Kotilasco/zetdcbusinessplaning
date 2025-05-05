@@ -55,7 +55,7 @@ export async function getAllWorkPlansFilter(data: WeeklyTableProps) {
 
     noStore();
 
-   // console.log(session)
+   console.log(session)
 
     try {
        // console.log("hello filtering");
@@ -64,9 +64,11 @@ export async function getAllWorkPlansFilter(data: WeeklyTableProps) {
         let url = `${process.env.BASE_URL}/api/plans/findBy/sectionId/${session?.user?.sectionId}/${data.week}/${data.month}/${data.year}`
         
         if(session?.user.role === UserRoles.ROLE_SENIORMANAGER){
-url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.departmentId}/${data.week}/${data.month}/${data.year}`
+url = `${process.env.BASE_URL}/api/plans/findBy/division/${session?.user?.divisionId}/week/${data.week}/month/${data.month}/year/${data.year}`
+//http://localhost:8080/api/plans/findBy/division/1/week/week4/month/April/year/2025
         }
 
+        console.log(url)
         
         const response = await fetch(
             url,
@@ -78,11 +80,11 @@ url = `${process.env.BASE_URL}/api/plans/findBy/departmentId/${session?.user?.de
                 },
             }
         );
-       
+       console.log(response)
         if (response.ok) {
-           // console.log("Successful");
+            console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-           // console.log(app);
+            console.log(app);
             return app;
         }
     } catch (error: any) {
