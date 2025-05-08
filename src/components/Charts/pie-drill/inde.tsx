@@ -181,7 +181,7 @@ const DonutChart = () => {
       </div>
 
       {/* Cards Section */}
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1">
         {data.departments.map((dept) => (
           <div
             key={dept.departmentId}
@@ -205,51 +205,17 @@ const DonutChart = () => {
                     ← Back to Main Chart
                   </button>
                 )}
-                <ResponsiveContainer width="100%" height={200}>
+                <ResponsiveContainer width={40} height={400}>
                   <PieChart>
                     <Pie
-                      data={
-                        !selectedCategory
-                          ? [
-                              { name: "Used", value: dept.percentageBudget },
-                              {
-                                name: "Remaining",
-                                value: 100 - dept.percentageBudget,
-                              },
-                            ]
-                          : drillData
-                      }
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50} // Adjusted size
-                      outerRadius={80}
-                      fill="#8884d8"
-                      onClick={
-                        selectedCategory
-                          ? undefined
-                          : (e) => handlePieClick(e, dept.departmentId)
-                      }
+                     
                     >
-                      {/* {[
-                        { name: "Used", value: dept.percentageBudget },
-                        {
-                          name: "Remaining",
-                          value: 100 - dept.percentageBudget,
-                        },
-                      ].map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))} */}
                       {!selectedCategory
                         ? [
-                            { name: "Used", value: dept.percentageBudget },
+                            { name: "Used", value: data.percentageBudget },
                             {
                               name: "Remaining",
-                              value: 100 - dept.percentageBudget,
+                              value: 100 - data.percentageBudget,
                             },
                           ].map((entry, index) => (
                             <Cell
@@ -265,7 +231,7 @@ const DonutChart = () => {
                           ))}
                     </Pie>
                     <Legend />
-                    <Tooltip />
+                    <Tooltip position={"top"} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>

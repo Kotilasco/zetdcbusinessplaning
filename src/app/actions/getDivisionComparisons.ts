@@ -14,6 +14,8 @@ interface DivProps {
     month?: string;
 
     year?: string;
+
+    currency?: string;
   
   }
   const now = new Date();
@@ -57,7 +59,9 @@ export async function getDivisionComparison(data: DivProps) {
     
     
         if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
-            url = `${baseUrl}/api/plans/division/budgetVsActual/year/${mergedData.year}/month/${mergedData.month}/division/${session?.user?.divisionId}`;
+
+            // /api/plans/division/budgetVsActual/year/{year}/month/{month}/currency/{currency}/division/{divisionId}
+            url = `${baseUrl}/api/plans/division/budgetVsActual/year/${mergedData.year}/month/${mergedData.month}/currency/${mergedData.currency}/division/${session?.user?.divisionId}`;
           }
 
           console.log(url)

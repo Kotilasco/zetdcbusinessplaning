@@ -174,8 +174,7 @@ const DonutChart = () => {
           className="rounded-md border bg-white px-4 py-2 shadow-sm"
         >
           <option value="USD">USD</option>
-          <option value="EUR">EUR</option>
-          <option value="GBP">GBP</option>
+          <option value="ZWF">ZWG</option>
         </select>
       </div>
 
@@ -218,11 +217,11 @@ const DonutChart = () => {
                           : drillData[dept.departmentId]
                       }
                       dataKey="value"
-                      nameKey="name"
+                      nameKey="name"a                                                                                                                                                                                                                
                       cx="50%"
                       cy="50%"
-                      innerRadius={50}
-                      outerRadius={80}
+                      innerRadius={30}
+                      outerRadius={65}
                       fill="#8884d8"
                       onClick={(e) =>
                         e.name === "Used" && // Only allow click on "Used" slice

@@ -137,7 +137,7 @@ export async function getDivisionSummary(data: WeeklyTableProps = {}) {
   if(session?.user?.role === UserRoles.ROLE_MANAGER){
     url = `${baseUrl}/api/plans/workplans/summary/section/${session?.user?.sectionId}`
   }else if(session?.user?.role === UserRoles.ROLE_SENIORMANAGER){
-    url = `${baseUrl}/api/plans/division-summary/division/${session?.user?.divisionId}/month/${month}/year/${year}/currency/USD`
+    url = `${baseUrl}/api/plans/division-summary/division/${session?.user?.divisionId}/month/${month}/year/${year}/currency/${currency}`
   }
   else{
     url = `${baseUrl}/api/plans/workplans/summary/department/${session?.user?.departmentId}`
@@ -216,7 +216,7 @@ export async function getDepartmentWorkSummaryById(departmentId: number) {
 
 
  
-console.log(departmentId)
+//console.log(departmentId)
 
   try {
     //console.log("Fetching summary...");
@@ -233,12 +233,12 @@ console.log(departmentId)
       },
     );
 
-     console.log(response)
+     //console.log(response)
 
     if (response.ok) {
       const app = await response.json(); // Extract JSON data from the response
 
-      console.log(app)
+      //console.log(app)
 
       return app;
     } else {

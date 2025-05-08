@@ -44,7 +44,7 @@ export async function getOverDueEmailData(departmentId: string) {
   }
 
 
-  export async function getEmailDataForDepartment(departmentId: string) {
+export async function getEmailDataForDepartment(departmentId: string) {
 
   
     noStore();
@@ -73,11 +73,11 @@ export async function getOverDueEmailData(departmentId: string) {
       if (!response.ok) throw new Error("Failed to fetch data");
   
       const app = await response.json();
-      console.log('object')
-      console.log(app);
+     // console.log('object')
+      // console.log(app);
       return app;
     } catch (error) {
       console.error("Error fetching overdue email data:", error);
       return [];
     }
-  }
+}

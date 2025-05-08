@@ -42,6 +42,7 @@ export default function DivisionExpenditureComparison() {
   const [filters, setFilters] = useState({
     month: now_month,
     year: now_year,
+    currency: "USD",
   });
 
   const [data, setData] = useState(null);
@@ -121,14 +122,24 @@ export default function DivisionExpenditureComparison() {
             placeholder="Enter Year"
             className="rounded border px-2 py-1"
           />
+
+          <select
+            name="currency"
+            value={filters.currency}
+            onChange={handleFilterChange}
+            className="rounded border px-2 py-1"
+          >
+            <option value="USD">USD</option>
+            <option value="ZWL">ZWG</option>
+          </select>
         </div>
       </div>
-      {!data || !data.weeklyData || data.weeklyData.length <= 0 ? (
+      {!data || data?.length <= 0 ? (
         <div className="p-6 text-center">No data available.</div>
       ) : (
         <>
           {/* Budget Comparison */}
-          <h2>Budget Comparison</h2>
+          {/* <h2>Budget Comparison</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data?.weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -149,10 +160,10 @@ export default function DivisionExpenditureComparison() {
                 name="Budget (ZWG)"
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> */}
 
           {/* Actual Comparison */}
-          <h2>Actual Comparison</h2>
+          {/* <h2>Actual Comparison</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data?.weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -185,10 +196,10 @@ export default function DivisionExpenditureComparison() {
                 name="Actual (ZWG)"
               />
             </LineChart>
-          </ResponsiveContainer>
+          </ResponsiveContainer> */}
 
           {/* Difference Comparison */}
-          <h2>Difference Comparison</h2>
+          {/* <h2>Difference Comparison</h2>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={data?.weeklyData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -209,9 +220,97 @@ export default function DivisionExpenditureComparison() {
                 name="Difference (ZWG)"
               />
             </LineChart>
+          </ResponsiveContainer> */}
+
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="week" />
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="budget"
+                stroke="#8dd4d8"
+                name={`Budget ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
+              />
+              <Line
+                type="monotone"
+                dataKey="actual"
+                stroke="#82ca9d"
+                name={`Actual ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
+              />
+            </LineChart>
           </ResponsiveContainer>
         </>
       )}
     </div>
   );
 }
+
+// Custom tooltip to show the difference between budget and actual
+const CustomTooltip = ({ active, payload, label }) => {
+  console.log(payload);
+  console.log(label);
+  if (active && payload && payload.length) {
+    const usdBudget =
+      payload.find((entry) => entry.dataKey === "budget")?.value || 0;
+    const usdActual =
+      payload.find((entry) => entry.dataKey === "actual")?.value || 0;
+
+    console.log(payload);
+    /* 
+    const zwgBudget =
+      payload.find((entry) => entry.dataKey === "budgetZWG")?.value || 0;
+    const zwgActual =
+      payload.find((entry) => entry.dataKey === "actualZWG")?.value || 0; */
+
+    // Calculate differences
+    const usdDifference = usdActual - usdBudget;
+    const usdPercentageDifference = ((usdDifference / usdBudget) * 100).toFixed(
+      2,
+    );
+
+    /*  const zwgDifference = zwgActual - zwgBudget;
+    const zwgPercentageDifference = ((zwgDifference / zwgBudget) * 100).toFixed(
+      2,
+    ); */
+
+    return (
+      <div
+        style={{
+          background: "#fff",
+          border: "1px solid #ccc",
+          padding: "10px",
+          borderRadius: "5px",
+        }}
+      >
+        <p style={{ margin: 0, fontWeight: "bold" }}>{`Week: ${label}`}</p>
+        {/* USD Data */}
+        <p style={{ margin: 0 }}>
+          <strong>Budget (USD):</strong> {usdBudget}
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Actual (USD):</strong> {usdActual}
+        </p>
+        <p style={{ margin: 0, color: usdDifference >= 0 ? "green" : "red" }}>
+          <strong>Difference (USD):</strong> {usdDifference} (
+          {usdPercentageDifference}%)
+        </p>
+        {/* ZWG Data */}
+        {/* <p style={{ margin: 0 }}>
+          <strong>Budget (ZWG):</strong> {zwgBudget}
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>Actual (ZWG):</strong> {zwgActual}
+        </p>
+        <p style={{ margin: 0, color: zwgDifference >= 0 ? "green" : "red" }}>
+          <strong>Difference (ZWG):</strong> {zwgDifference} (
+          {zwgPercentageDifference}%)
+        </p> */}
+      </div>
+    );
+  }
+  return null;
+};

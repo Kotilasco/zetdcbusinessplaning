@@ -38,7 +38,7 @@ console.log(cronJobInitialized)
 
   //0 16 * * 5
 // */50 * * * *
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("0 16 * * 5", async () => {
     console.log("Running the scheduled task...", ++i);
 
     const { week, month, year } = getCurrentWeek();

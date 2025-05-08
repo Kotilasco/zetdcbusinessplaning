@@ -10,7 +10,7 @@ import httpntlm from "httpntlm";
 
 
 export const GET = async (req: NextRequest) => {
-    console.log("API route /api/file was hit by:", req.headers);
+  //  console.log("API route /api/file was hit by:", req.headers);
 
     const { searchParams } = new URL(req.url);
     const folder = searchParams.get("folder") || "";
@@ -30,7 +30,7 @@ if (!fs.existsSync(dir)) {
   throw new Error(`Directory ${dir} does not exist`);
 }
 
-        console.log("Directory:", dir);
+      //  console.log("Directory:", dir);
 
         //  const files = fs.readdirSync(dir);
         // Read all files in the folder
@@ -53,7 +53,7 @@ if (!fs.existsSync(dir)) {
             };
         });
 
-        console.log("Files:", files);
+       // console.log("Files:", files);
 
 
         return new NextResponse(JSON.stringify({ message: "Files read successfully", documents: files }), {
