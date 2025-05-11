@@ -53,7 +53,7 @@ export async function getDivisionComparison(data: DivProps) {
         throw new Error("BASE_URL is not defined in environment variables");
     }
 
-    console.log(mergedData)
+   // console.log(mergedData)
 
      let url = `${baseUrl}/api/plans/division/budgetVsActual/year/${mergedData.year}/month/${mergedData.month}/division/${mergedData?.divisionId}`;
     
@@ -64,7 +64,7 @@ export async function getDivisionComparison(data: DivProps) {
             url = `${baseUrl}/api/plans/division/budgetVsActual/year/${mergedData.year}/month/${mergedData.month}/currency/${mergedData.currency}/division/${session?.user?.divisionId}`;
           }
 
-          console.log(url)
+          // console.log(url)
 
     try {
         const response = await fetch(url, {
@@ -78,7 +78,7 @@ export async function getDivisionComparison(data: DivProps) {
 
         if (response.ok) {
             const app = await response.json(); // Extract JSON data from the response
-            console.log("comparisons:", app);
+            // console.log("comparisons:", app);
             return app;
         } else {
             throw new Error(`Failed to fetch team members: ${response.statusText}`);
@@ -89,7 +89,5 @@ export async function getDivisionComparison(data: DivProps) {
         throw new Error(errorMessage);
     }
 
-    // Uncomment these if necessary
-    // revalidatePath("/dashboard/user/applications");
-    // redirect("/dashboard/user/applications");
+    
 }

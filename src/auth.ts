@@ -59,7 +59,7 @@ export const {
                     departmentId: user.departmentId,
                     divisionId: user.divisionId,
                     role: user.roles?.slice(-1)[0], // Ensure roles array exists before slicing
-                    accessTokenExpires: Date.now() + 1000 * 60 * 30, // 30 minutes
+                    accessTokenExpires: Date.now() + 1000 * 60 * 1, // 30 minutes
                 };
             }
 
@@ -70,7 +70,7 @@ export const {
             }
 
             // 3. If the token is expired, refresh it
-           // console.log("JWT callback - Token expired, attempting to refresh");
+            console.log("JWT callback - Token expired, attempting to refresh");
             return await refreshAccessToken(token);
         },
         async session({ token, session }) {
@@ -97,7 +97,7 @@ export const {
     },
     session: {
         strategy: "jwt",
-        maxAge: 30 * 60, // Session expiration time in seconds (e.g., 30 minutes)
+        maxAge: 30, // Session expiration time in seconds (e.g., 30 minutes)
         updateAge: 5 * 60, // Time in seconds to update the session
     },
 
@@ -116,6 +116,8 @@ async function refreshAccessToken(token) {
             },
             body: JSON.stringify({ refreshToken: token.refresh_token }),
         });
+
+        console.log("Response from refresh token endpoint:", response); // Debugging log
 
         const refreshedTokens = await response.json();
 

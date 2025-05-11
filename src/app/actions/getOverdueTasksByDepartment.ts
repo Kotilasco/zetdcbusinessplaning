@@ -11,8 +11,9 @@ interface Props {
 
   year?: string,
   status?: string,
-  departmentID?: string
+  departmentId?: string
 }
+
 
 export async function getOverdueTasksByDepartment(
   data: Props
@@ -24,15 +25,16 @@ export async function getOverdueTasksByDepartment(
   // console.log(data)
 
   try {
-   // console.log("hello here we are!!!!");
+    console.log(data);
 
-    let url = `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${session?.user?.departmentId}`;
+    let url = `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${data?.departmentId || session?.user?.departmentId}`;
 
 
     if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
-      url =  `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${departmentID}`;
+      url =  `${process.env.BASE_URL}/api/plans/section-summary-overdue/workplans/department/${data?.departmentId}`;
       }
   
+      console.log(url)
 
     const response = await fetch(url, {
       method: "GET",
@@ -45,7 +47,7 @@ export async function getOverdueTasksByDepartment(
     if (response.ok) {
       console.log("Successful");
       let app = await response.json(); // Extract the JSON data from the response
-      //console.log(app);
+      console.log(app);
       return app;
     }
   } catch (error: any) {

@@ -46,6 +46,8 @@ const BarCHart = ({ departmentData }: any) => {
     );
   } */
 
+  console.log(departmentData);
+
   if (!departmentData) {
     return (
       <div className="flex min-h-screen items-center justify-center">
@@ -70,7 +72,7 @@ const BarCHart = ({ departmentData }: any) => {
     Rescheduled: "#ff9800", // Orange
   };
 
-  console.log(departmentData)
+  console.log(departmentData);
 
   return (
     <div className="flex w-full flex-col items-center">

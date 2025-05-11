@@ -60,8 +60,6 @@ export async function getBudgetUsageForEachSection(data: WeeklyTableProps = {}) 
   console.log(url)
 
   try {
-   // console.log("Fetching summary...");
-    ///api/teamMembers/department/{departmentId}
     const response = await fetch(
       url,
       {

@@ -13,6 +13,7 @@ import {
 } from "recharts";
 import { getDivisionSummary } from "@/app/actions/departmentWorkSummary";
 import { getBudgetUsageForEachSection } from "@/app/actions/budgetUsageForEachSection";
+import { getOverdueTasksByDepartment } from "@/app/actions/getOverdueTasksByDepartment";
 
 const COLORS = [
   "#0088FE",
@@ -26,6 +27,8 @@ const COLORS = [
 const DonutChart = () => {
   const [drillData, setDrillData] = useState({}); // Store drill-down data per department
   const [selectedCategory, setSelectedCategory] = useState({}); // Track selected category per department
+  const [drillDataOverdue, setDrillDataOverdue] = useState({});
+  const [selectedCategoryOverdue, setSelectedCategoryOverdue] = useState({});
   const [filters, setFilters] = useState({
     month: "March",
     year: "2025",
@@ -91,10 +94,95 @@ const DonutChart = () => {
     ],
   );
 
-  const handleBackClick = (departmentId: string) => {
+  const handleOverDuePieClick = useCallback(
+    async (entry: any, departmentId: string, type: string) => {
+      if (entry.name === "Used" && type === "budget") {
+        // Handle Budget Drill-Down
+        setLoading(true);
+        setError(null);
+
+        try {
+          console.log(departmentId);
+
+          const drillDownResponse = await getOverdueTasksByDepartment({
+            departmentId,
+          });
+
+          const drillDownFormattedData = drillDownResponse?.overdueTasks?.map(
+            (section) => ({
+              name: section.sectionName,
+              value: section.percentageContribution,
+            }),
+          );
+
+          setDrillData((prev) => ({
+            ...prev,
+            [departmentId]: drillDownFormattedData,
+          }));
+          setSelectedCategory((prev) => ({
+            ...prev,
+            [departmentId]: entry.name,
+          }));
+        } catch (err) {
+          setError(
+            `Failed to fetch drill-down data for ${departmentId}. Please try again.`,
+          );
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      } else if (entry.name === "Overdue" && type === "overdue") {
+        // Handle Overdue Drill-Down
+        setLoading(true);
+        setError(null);
+
+        try {
+          const drillDownResponse = await getOverdueTasksByDepartment({
+            departmentId,
+          });
+
+          const drillDownFormattedData = drillDownResponse?.overdueTasks?.map(
+            (section) => ({
+              name: section.sectionName,
+              value: section.percentageContribution,
+            }),
+          );
+
+          setDrillDataOverdue((prev) => ({
+            ...prev,
+            [departmentId]: drillDownFormattedData,
+          }));
+          setSelectedCategoryOverdue((prev) => ({
+            ...prev,
+            [departmentId]: entry.name,
+          }));
+        } catch (err) {
+          setError(
+            `Failed to fetch overdue drill-down data for ${departmentId}. Please try again.`,
+          );
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      }
+    },
+    [filters],
+  );
+
+  const handleBackClick = (departmentId: string, type: string) => {
+    if (type === "budget") {
+      setDrillData((prev) => ({ ...prev, [departmentId]: [] }));
+      setSelectedCategory((prev) => ({ ...prev, [departmentId]: null }));
+    } else if (type === "overdue") {
+      setDrillDataOverdue((prev) => ({ ...prev, [departmentId]: [] }));
+      setSelectedCategoryOverdue((prev) => ({ ...prev, [departmentId]: null }));
+    }
+  };
+
+  /*  const handleBackClick = (departmentId: string) => {
     setDrillData((prev) => ({ ...prev, [departmentId]: [] }));
     setSelectedCategory((prev) => ({ ...prev, [departmentId]: null }));
-  };
+  }; */
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -195,7 +283,7 @@ const DonutChart = () => {
                 {/* Back Button */}
                 {selectedCategory[dept.departmentId] && (
                   <button
-                    onClick={() => handleBackClick(dept.departmentId)}
+                    onClick={() => handleBackClick(dept.departmentId, "budget")}
                     className="absolute left-0 top-0 z-10 rounded bg-blue-500 px-3 py-1 text-xs font-semibold text-white"
                     style={{ transform: "translateY(-100%)" }}
                   >
@@ -217,7 +305,7 @@ const DonutChart = () => {
                           : drillData[dept.departmentId]
                       }
                       dataKey="value"
-                      nameKey="name"a                                                                                                                                                                                                                
+                      nameKey="name"
                       cx="50%"
                       cy="50%"
                       innerRadius={30}
@@ -282,7 +370,8 @@ const DonutChart = () => {
                       ]}
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
+                      innerRadius={30}
+                      outerRadius={65}
                       fill="#8884d8"
                       dataKey="value"
                       label={({ percent }) => formatPercentage(percent * 100)}
@@ -307,38 +396,63 @@ const DonutChart = () => {
               </div>
 
               {/* Overdue Tasks Pie Chart */}
-              <div>
+              <div className="relative">
                 <h4 className="mb-2 text-sm font-semibold">Overdue Tasks</h4>
+                {selectedCategoryOverdue[dept.departmentId] && (
+                  <button
+                    onClick={() =>
+                      handleBackClick(dept.departmentId, "overdue")
+                    }
+                    className="absolute left-0 top-0 z-10 rounded bg-blue-500 px-3 py-1 text-xs font-semibold text-white"
+                    style={{ transform: "translateY(-100%)" }}
+                  >
+                    ← Back
+                  </button>
+                )}
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
-                      data={[
-                        { name: "Overdue", value: dept.percentageOverdue },
-                        {
-                          name: "On Time",
-                          value: 100 - dept.percentageOverdue,
-                        },
-                      ]}
+                      data={
+                        !selectedCategoryOverdue[dept.departmentId]
+                          ? [
+                              {
+                                name: "Overdue",
+                                value: dept.percentageOverdue,
+                              },
+                              {
+                                name: "On Time",
+                                value: 100 - dept.percentageOverdue,
+                              },
+                            ]
+                          : drillDataOverdue[dept.departmentId]
+                      }
+                      dataKey="value"
+                      nameKey="name"
                       cx="50%"
                       cy="50%"
-                      outerRadius={80}
+                      innerRadius={30}
+                      outerRadius={65}
                       fill="#8884d8"
-                      dataKey="value"
+                      onClick={(e) =>
+                        e.name === "Overdue" &&
+                        !selectedCategoryOverdue[dept.departmentId] &&
+                        handleOverDuePieClick(e, dept.departmentId, "overdue")
+                      }
                       label={({ percent }) => formatPercentage(percent * 100)}
                     >
                       <Cell fill="#FF4560" />
                       <Cell fill="#00C49F" />
                     </Pie>
+                    <Legend
+                      layout="horizontal"
+                      align="center"
+                      verticalAlign="bottom"
+                    />
                     <Tooltip
                       formatter={(value) => [
                         formatPercentage(value),
                         "Percentage",
                       ]}
-                    />
-                    <Legend
-                      layout="horizontal"
-                      align="center"
-                      verticalAlign="bottom"
                     />
                   </PieChart>
                 </ResponsiveContainer>

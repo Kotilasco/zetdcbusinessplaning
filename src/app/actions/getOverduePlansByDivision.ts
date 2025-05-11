@@ -58,7 +58,7 @@ export async function getOverDueTasksByDivision() {
     url = `${baseUrl}/api/plans/overdue/division/${session?.user?.sectionId}/week/week1/month/March/year/${year}`
   }else if(session?.user?.role === UserRoles.ROLE_SENIORMANAGER){
    
-    url = `${baseUrl}/api/plans/overdue/division/${session?.user?.divisionId}/week/${week}/month/${month}/year/${year}`
+    url = `${baseUrl}/api/plans/overdue/division/${session?.user?.divisionId}/week/week${week}/month/${month}/year/${year}`
   }
   else{
     // to be changed
@@ -71,7 +71,7 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
   }
 
   try {
-    //console.log("Fetching summary...");
+    console.log(url)
     ///api/teamMembers/department/{departmentId}
     const response = await fetch(
       url,
