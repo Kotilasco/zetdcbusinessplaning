@@ -7,7 +7,7 @@ import dynamic from "next/dynamic";
 import { SelectReport } from "@/components/Reports/IRBMQuarter";
 import { YearlyReport } from "@/components/Reports/Yearly";
 import DeptOverdue from "@/components/DeptOverdue";
-import OverdueTable from "@/components/AdminDashboard/DepartmentOverdueTasks";
+import OverdueTable from "./OverdueTable";
 
 /* export const metadata: Metadata = {
   title: "Next.js MonthlyReports Page | NextAdmin - Next.js Dashboard c",

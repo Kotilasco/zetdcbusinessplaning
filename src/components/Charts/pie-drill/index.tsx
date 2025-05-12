@@ -14,6 +14,7 @@ import {
 import { getDivisionSummary } from "@/app/actions/departmentWorkSummary";
 import { getBudgetUsageForEachSection } from "@/app/actions/budgetUsageForEachSection";
 import { getOverdueTasksByDepartment } from "@/app/actions/getOverdueTasksByDepartment";
+import { getStatusContribution } from "@/app/actions/getStatusContribution";
 
 const COLORS = [
   "#0088FE",
@@ -28,7 +29,9 @@ const DonutChart = () => {
   const [drillData, setDrillData] = useState({}); // Store drill-down data per department
   const [selectedCategory, setSelectedCategory] = useState({}); // Track selected category per department
   const [drillDataOverdue, setDrillDataOverdue] = useState({});
+  const [drillTaskData, setDrillTaskData] = useState({});
   const [selectedCategoryOverdue, setSelectedCategoryOverdue] = useState({});
+  const [selectedTaskCategory, setSelectedTaskCategory] = useState({});
   const [filters, setFilters] = useState({
     month: "March",
     year: "2025",
@@ -37,6 +40,8 @@ const DonutChart = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  let allowedTaskSlices = ["Complete", "Pending", "In Progress", "Cancelled"];
 
   const handleFilterChange = (event: any) => {
     const { name, value } = event.target;
@@ -169,6 +174,93 @@ const DonutChart = () => {
     [filters],
   );
 
+  const handleTaskPieClick = useCallback(
+    async (entry: any, departmentId: string, type: string) => {
+      console.log(entry);
+      console.log(type);
+      console.log(allowedTaskSlices.includes(entry.name) && type === "task");
+      console.log(filters.year, filters.month, departmentId);
+      if (allowedTaskSlices.includes(entry.name) && type === "task") {
+        // Handle Budget Drill-Down
+        setLoading(true);
+        setError(null);
+
+        console.log("hh ffher fdnjfjhfr");
+
+        try {
+          console.log("kkkkkk");
+          const drillDownResponse = await getStatusContribution({
+            year: filters.year,
+            month: filters.month,
+            status: entry.name,
+            departmentId,
+          });
+
+          console.log(drillDownResponse);
+
+          const drillDownFormattedData = drillDownResponse?.map((section) => ({
+            name: section.sectionName,
+            value: section.percentage,
+          }));
+
+          console.log(drillDownFormattedData);
+
+          setDrillTaskData((prev) => ({
+            ...prev,
+            [departmentId]: drillDownFormattedData,
+          }));
+          setSelectedTaskCategory((prev) => ({
+            ...prev,
+            [departmentId]: entry.name,
+          }));
+
+          console.log("mmnn mmnn mnnmm");
+        } catch (err) {
+          setError(
+            `Failed to fetch drill-down data for ${departmentId}. Please try again.`,
+          );
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      } /*  else if (entry.name === "Overdue" && type === "overdue") {
+        // Handle Overdue Drill-Down
+        setLoading(true);
+        setError(null);
+
+        try {
+          const drillDownResponse = await getOverdueTasksByDepartment({
+            departmentId,
+          });
+
+          const drillDownFormattedData = drillDownResponse?.overdueTasks?.map(
+            (section) => ({
+              name: section.sectionName,
+              value: section.percentageContribution,
+            }),
+          );
+
+          setDrillDataOverdue((prev) => ({
+            ...prev,
+            [departmentId]: drillDownFormattedData,
+          }));
+          setSelectedCategoryOverdue((prev) => ({
+            ...prev,
+            [departmentId]: entry.name,
+          }));
+        } catch (err) {
+          setError(
+            `Failed to fetch overdue drill-down data for ${departmentId}. Please try again.`,
+          );
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
+      } */
+    },
+    [filters],
+  );
+
   const handleBackClick = (departmentId: string, type: string) => {
     if (type === "budget") {
       setDrillData((prev) => ({ ...prev, [departmentId]: [] }));
@@ -176,6 +268,9 @@ const DonutChart = () => {
     } else if (type === "overdue") {
       setDrillDataOverdue((prev) => ({ ...prev, [departmentId]: [] }));
       setSelectedCategoryOverdue((prev) => ({ ...prev, [departmentId]: null }));
+    } else if (type === "task") {
+      setDrillTaskData((prev) => ({ ...prev, [departmentId]: [] }));
+      setSelectedTaskCategory((prev) => ({ ...prev, [departmentId]: null }));
     }
   };
 
@@ -354,26 +449,53 @@ const DonutChart = () => {
               </div>
 
               {/* Task Progress Pie Chart */}
-              <div>
+              <div className="relative">
                 <h4 className="mb-2 text-sm font-semibold">Task Progress</h4>
+                {selectedTaskCategory[dept.departmentId] && (
+                  <button
+                    onClick={() => handleBackClick(dept.departmentId, "task")}
+                    className="absolute left-0 top-0 z-10 rounded bg-blue-500 px-3 py-1 text-xs font-semibold text-white"
+                    style={{ transform: "translateY(-100%)" }}
+                  >
+                    ← Back
+                  </button>
+                )}
                 <ResponsiveContainer width="100%" height={200}>
                   <PieChart>
                     <Pie
-                      data={[
-                        { name: "Complete", value: dept.percentageComplete },
-                        { name: "Pending", value: dept.percentagePending },
-                        {
-                          name: "In Progress",
-                          value: dept.percentageInProgress,
-                        },
-                        { name: "Cancelled", value: dept.percentageCancelled },
-                      ]}
+                      data={
+                        !selectedTaskCategory[dept.departmentId]
+                          ? [
+                              {
+                                name: "Complete",
+                                value: dept.percentageComplete,
+                              },
+                              {
+                                name: "Pending",
+                                value: dept.percentagePending,
+                              },
+                              {
+                                name: "In Progress",
+                                value: dept.percentageInProgress,
+                              },
+                              {
+                                name: "Cancelled",
+                                value: dept.percentageCancelled,
+                              },
+                            ]
+                          : drillTaskData[dept.departmentId]
+                      }
                       cx="50%"
                       cy="50%"
                       innerRadius={30}
                       outerRadius={65}
                       fill="#8884d8"
                       dataKey="value"
+                      onClick={(e) =>
+                        allowedTaskSlices.includes(e.name) &&
+                        !selectedTaskCategory[dept.departmentId] &&
+                        handleTaskPieClick(e, dept.departmentId, "task")
+                      }
                       label={({ percent }) => formatPercentage(percent * 100)}
                     >
                       {COLORS.map((color, index) => (
