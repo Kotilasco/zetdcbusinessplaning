@@ -59,7 +59,7 @@ export const {
                     departmentId: user.departmentId,
                     divisionId: user.divisionId,
                     role: user.roles?.slice(-1)[0], // Ensure roles array exists before slicing
-                    accessTokenExpires: Date.now() + 1000 * 60 * 1, // 30 minutes
+                    accessTokenExpires: Date.now() + 1000 * 60 * 10, // 30 minutes
                 };
             }
 
@@ -97,7 +97,7 @@ export const {
     },
     session: {
         strategy: "jwt",
-        maxAge: 30, // Session expiration time in seconds (e.g., 30 minutes)
+        maxAge: 30 * 60, // Session expiration time in seconds (e.g., 30 minutes)
         updateAge: 5 * 60, // Time in seconds to update the session
     },
 
