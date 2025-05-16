@@ -63,8 +63,9 @@ const DynamicLineCharts = () => {
   // Fetch the `assignedSections` from the main endpoint
   useEffect(() => {
     const fetchSections = async () => {
+      console.log("object");
       const response = await getSectionsByDeptId();
-      setSections(response?.assignedSections || []);
+      setSections(response || []);
     };
 
     fetchSections();
@@ -121,6 +122,8 @@ const DynamicLineCharts = () => {
       fetchSectionData();
     }
   }, [sections]);
+
+  console.log(sections);
 
   return (
     <DefaultLayout>

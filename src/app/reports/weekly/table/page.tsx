@@ -195,6 +195,26 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   const [status, setStatus] = useState(""); // State for dropdown status
   const [section, setSection] = useState(null); // State for section data
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of rows per page
+
+  // Calculate total pages
+  const totalPages = Math.ceil((reports?.length || 0) / itemsPerPage);
+
+  // Get the data for the current page
+  const paginatedReports = reports?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // Handle page change
+  const changePage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const handleConfirm = async (id: number) => {
     console.log(id);
     console.log("Selected Date:", selectedDate);
@@ -321,7 +341,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
           currency,
         });
 
-        //console.log(pieData);
+        console.log(pieData);
         setPieData(pieData);
       } catch (error: any) {
         console.log(error);
@@ -697,7 +717,7 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
                   </tr>
                 ))
               : // Display actual data rows
-                reports?.map((report, index) => (
+                paginatedReports?.map((report, index) => (
                   <tr
                     key={index}
                     className="cursor-pointer border transition hover:bg-gray-100"
@@ -1053,6 +1073,27 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
                 ))}
           </tbody>
         </table>
+
+        {/* Pagination Controls */}
+        <div className="mt-4 flex items-center justify-between">
+          <button
+            className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+            onClick={() => changePage(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+            onClick={() => changePage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </div>
       </div>
       <div className="mt-4 space-x-4">
         <button

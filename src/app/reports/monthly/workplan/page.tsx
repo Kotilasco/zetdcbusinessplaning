@@ -145,6 +145,26 @@ export default function SelectForm() {
   const [members, setMembers] = useState(null);
   const [section, setSection] = useState(null);
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of rows per page
+
+  // Calculate total pages
+  const totalPages = Math.ceil((workPlans?.length || 0) / itemsPerPage);
+
+  // Get the data for the current page
+  const paginatedWorkPlans = workPlans?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // Handle page change
+  const changePage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const years = Array.from({ length: 1 }, (_, i) => 2025 + i);
 
   const handleToggleMember = (memberName) => {
@@ -380,7 +400,7 @@ export default function SelectForm() {
                       </tr>
                     ))
                   : // Display actual data rows
-                    workPlans?.map((plan, index) => (
+                    paginatedWorkPlans?.map((plan, index) => (
                       <tr key={index} className="border">
                         <td className="border p-2">{plan.month}</td>
                         <td className="border p-2">{plan.week}</td>
@@ -404,6 +424,26 @@ export default function SelectForm() {
                     ))}
               </tbody>
             </table>
+            {/* Pagination Controls */}
+            <div className="mt-4 flex items-center justify-between">
+              <button
+                className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+                onClick={() => changePage(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+                onClick={() => changePage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
           </div>
           <div className="mt-4 space-x-4">
             <button

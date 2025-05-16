@@ -1,39 +1,9 @@
 //@ts-nocheck
 
 import { getListOfOverdueTasks } from "@/app/actions/getOverdueTaskForDepartment";
+import { auth } from "@/auth";
+import { UserRoles } from "@/next-auth.d";
 import React from "react";
-
-// Sample Data
-/* const data = [
-  {
-    departmentName: "Information Technology",
-    sectionName: "IT Governance",
-    scopeDetails: "BI development",
-    workPlanId: 1,
-    targetCompletionDate: "2025-02-01",
-    overdueDays: 99,
-    teamMembers: ["Farai Makova"],
-  },
-  {
-    departmentName: "Information Technology",
-    sectionName: "IT Governance",
-    scopeDetails: "Customer Relationship Management (CRM) enhancements",
-    workPlanId: 3,
-    targetCompletionDate: "2024-03-31",
-    overdueDays: 406,
-    teamMembers: ["Nyasha Chikobvore", "Knowledge Kwaramba", "Kudakwashe Koti"],
-  },
-  {
-    departmentName: "Information Technology",
-    sectionName: "IT Governance",
-    scopeDetails: "Audit compliance updates",
-    workPlanId: 4,
-    targetCompletionDate: "2025-01-28",
-    overdueDays: 103,
-    teamMembers: ["Farai Makova", "Nyasha Chikobvore", "Kudakwashe Koti"],
-  },
-  // Add more sections and data here as needed
-]; */
 
 // Group the data by section name
 const groupDataBySection = (data) => {
@@ -48,10 +18,17 @@ const groupDataBySection = (data) => {
 export default async function OverdueTable() {
   const data = await getListOfOverdueTasks("1");
   const groupedData = groupDataBySection(data);
+  const session = await auth();
+  console.log(session);
 
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1 className="font-bold mb-2 ">Overdue Work Plans for department: {data[0]?.departmentName}</h1>
+      <h1 className="mb-2 font-bold ">
+        Overdue Work Plans for{" "}
+        {session?.user.role === UserRoles.ROLE_SENIORMANAGER
+          ? ` department: ${data[0]?.departmentName}`
+          : ` section: ${data[0]?.sectionName}`}
+      </h1>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
