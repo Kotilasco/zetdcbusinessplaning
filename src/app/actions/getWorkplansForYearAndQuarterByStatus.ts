@@ -21,20 +21,21 @@ export async function getWorkplansForYearAndQuarterByStatus(
 
   noStore();
 
-  // console.log(data)
+   console.log(data)
 
   try {
-    //console.log("hello here we are!!!!");
+    console.log("hello here we are!!!!");
 
     let url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.year}/sectionId/${session?.user?.sectionId}/quarter/${data.quarter}/status/${data.status}`;
 
     if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
-      url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.year}/departmentId/${session?.user?.departmentId}/quarter/${data.quarter}/status/${data.status}`;
+      
+      url = `${process.env.BASE_URL}/api/plans/workplans/year/${data.year}/division/${session?.user?.divisionId}/quarter/${data.quarter}/status/${data.status}`;
     }
 
 
 
-   // console.log(url);
+    console.log(url);
 
     const response = await fetch(url, {
       method: "GET",
@@ -45,9 +46,9 @@ export async function getWorkplansForYearAndQuarterByStatus(
     });
 
     if (response.ok) {
-     // console.log("Successful");
+      console.log("Successful");
       let app = await response.json(); // Extract the JSON data from the response
-    //  console.log(app);
+      console.log(app);
       return app;
     }
   } catch (error: any) {

@@ -93,7 +93,7 @@ url = `${baseUrl}/api/plans/workplans/summary/department/1`
     if (response.ok) {
       const app = await response.json(); // Extract JSON data from the response
 
-      console.log(app)
+     // console.log(app)
 
       return app;
     } else {

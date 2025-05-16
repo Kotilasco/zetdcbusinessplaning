@@ -59,7 +59,7 @@ export default function DivisionExpenditureComparison() {
     try {
       // Pass the filters to the getDivisionComparison function
       const response = await getDivisionComparison(filters);
-      console.log(response);
+      // console.log(response);
       setData(response);
     } catch (err) {
       setError("Failed to fetch data. Please try again later.");

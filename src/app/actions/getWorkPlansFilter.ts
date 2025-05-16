@@ -68,7 +68,7 @@ url = `${process.env.BASE_URL}/api/plans/findBy/division/${session?.user?.divisi
 //http://localhost:8080/api/plans/findBy/division/1/week/week4/month/April/year/2025
         }
 
-        console.log(url)
+       console.log(url)
         
         const response = await fetch(
             url,
@@ -80,11 +80,11 @@ url = `${process.env.BASE_URL}/api/plans/findBy/division/${session?.user?.divisi
                 },
             }
         );
-       console.log(response)
+     //  console.log(response)
         if (response.ok) {
             console.log("Successful");
             let app: workPlans = await response.json(); // Extract the JSON data from the response
-            console.log(app);
+          //  console.log(app);
             return app;
         }
     } catch (error: any) {

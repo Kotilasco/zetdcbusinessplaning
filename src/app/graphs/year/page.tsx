@@ -64,7 +64,7 @@ const DynamicLineCharts = () => {
   useEffect(() => {
     const fetchSections = async () => {
       const response = await getSectionsByDeptId();
-      setSections(response.assignedSections || []);
+      setSections(response?.assignedSections || []);
     };
 
     fetchSections();

@@ -20,7 +20,7 @@ export default function handler(req, res) {
   if (req.method === 'GET') {
     try {
       // Schedule the cron job to run every Friday at 4:00 PM
-      cron.schedule('*/2 * * * *', async () => {
+      cron.schedule('*/200 * * * *', async () => {
         console.log('Running the scheduled task...');
 
         // Get the current week, month, and year

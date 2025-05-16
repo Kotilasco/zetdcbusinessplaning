@@ -18,7 +18,7 @@ const DepartmentDashboard = ({ params }: any) => {
       try {
         const response = await getDepartmentWorkSummaryById(params?.id);
 
-        console.log(response);
+       //  console.log(response);
         setData(response);
         setLoading(false);
       } catch (err) {

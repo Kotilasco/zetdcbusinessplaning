@@ -5,6 +5,7 @@ import { auth, signOut } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { UserRoles } from "@/next-auth.d";
+import { getDepartmentIdListByDivisionId } from "./getDepartments";
 
 
 export async function getListOfOverdueTasks(
@@ -19,13 +20,35 @@ export async function getListOfOverdueTasks(
   try {
     console.log("hello here we are??");
 
-    let url = `${process.env.BASE_URL}/api/plans/section-list-overdue/workplans/department/${departmentId}`;
+    let url = `${process.env.BASE_URL}/api/plans/section-list-overdue/workplans/section/${session?.user?.sectionId}`;
 
 
     if (session?.user.role === UserRoles.ROLE_SENIORMANAGER) {
-        url = `${process.env.BASE_URL}/api/plans/section-list-overdue/workplans/department/${departmentId}`;
+      //  url = `${process.env.BASE_URL}/api/plans/department-list-overdue/workplans/department/${departmentId}`;
+         const departmentIds = await getDepartmentIdListByDivisionId(
+        session.user.divisionId
+      );
+
+      if (!Array.isArray(departmentIds) || departmentIds.length === 0) {
+        throw new Error("No departments found for the senior manager.");
       }
-  
+
+      // Fetch overdue tasks for each department and flatten the results into a single array
+      const results = await Promise.all(
+        departmentIds.map((deptId) => {
+         const url = `${process.env.BASE_URL}/api/plans/department-list-overdue/workplans/department/${deptId}`;
+          return fetchOverdueTasks(url, session?.access_token);
+        })
+      );
+
+      console.log('jkfhfhf');
+      console.log(results?.flat());
+
+      // Flatten the results into one array
+      return results.flat();
+      }
+
+      console.log(url);
 
     const response = await fetch(url, {
       method: "GET",
@@ -47,6 +70,29 @@ export async function getListOfOverdueTasks(
 
 }
 
+// Helper function to fetch overdue tasks for a specific department or section
+async function fetchOverdueTasks(url: string, accessToken: string) {
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch data from: ${url}`);
+      return []; // Return an empty array on failure
+    }
+
+    const data = await response.json();
+    return Array.isArray(data) ? data : []; // Ensure the response is an array
+  } catch (error: any) {
+    console.error(`Error fetching data from: ${url}`, error);
+    return []; // Return an empty array on error
+  }
+}
 
 export async function getPieDataForOverdueDeptTasks(
   departmentId?: string
@@ -96,11 +142,11 @@ console.log(`Week: ${week}, Month: ${month}, Year: ${year}`)
       },
     });
 
-    console.log(response)
+    // console.log(response)
 
     if (response.ok) {
       let app = await response.json(); // Extract the JSON data from the response
-     console.log(app);
+    // console.log(app);
       return app;
     }
   } catch (error: any) {

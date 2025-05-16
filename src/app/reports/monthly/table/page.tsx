@@ -102,6 +102,7 @@ import CumulativeExpenditureAreaChart from "@/components/DashboardGraphs/Monthly
 import BudgetMetricsRadarChart from "@/components/DashboardGraphs/MonthlyRadarChart";
 import WeeklyExpenditureBarChart from "@/components/DashboardGraphs/MonthlyBarChart";
 import WeeklyBudgetLineChart from "@/components/DashboardGraphs/WeeklyLineChart";
+import { getSectionNameById } from "@/app/actions/getSectionsFromDepartment";
 
 /* export const FormSchema = z.object({
   weeklyTarget: z.number({
@@ -259,7 +260,7 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
   const tableRef = useRef(null);
 
   // Export table as PDF
-  const exportAsPDF = () => {
+  /* const exportAsPDF = () => {
     const doc = new jsPDF();
     doc.text("Work Plans", 14, 10);
 
@@ -288,9 +289,119 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
     });
 
     const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
-    doc.save(`WorkPlans_${timestamp}.pdf`);
-  };
+    doc.save(`Weekly_WorkPlans_${timestamp}.pdf`);
+  }; */
 
+  const exportAsPDF = async () => {
+    const doc = new jsPDF();
+
+    // Add logo
+    const logoUrl = "/images/logo/zetdc.png"; // Your logo file
+    const img = new Image();
+    img.src = logoUrl;
+
+    img.onload = async () => {
+      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
+
+      // Add a header after the logo
+      doc.setFontSize(18);
+      doc.text(`Report For The Month of ${month} ${year}`, 50, 20); // Adjust x and y position
+
+      // Draw a line under the header
+      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
+
+      // Group data by sectionId
+      const groupedReports = reports.reduce((acc, report) => {
+        const sectionId = report.sectionId;
+        if (!acc[sectionId]) {
+          acc[sectionId] = [];
+        }
+        acc[sectionId].push(report);
+        return acc;
+      }, {});
+
+      let startY = 40; // Initial Y position for the table
+
+      // Fetch section names for each sectionId
+      const sectionNames = await Promise.all(
+        Object.keys(groupedReports).map(async (sectionId) => ({
+          sectionId,
+          name: await getSectionNameById(sectionId),
+        })),
+      );
+
+      // Create a map of sectionId to sectionName for quick lookup
+      const sectionNameMap = sectionNames.reduce((acc, { sectionId, name }) => {
+        acc[sectionId] = name;
+        return acc;
+      }, {});
+
+      // Iterate over grouped data and add each section's table
+      Object.keys(groupedReports).forEach((sectionId, index) => {
+        const sectionReports = groupedReports[sectionId];
+
+        // Add section header
+        const sectionName = sectionNameMap[sectionId] || `Section ${sectionId}`;
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(sectionName?.toUpperCase(), 10, startY); // Use fetched section name
+        startY += 12;
+
+        // Add the table for this section
+        autoTable(doc, {
+          head: [
+            [
+              "Activity",
+              "Weekly Target",
+              "Actual Work Done",
+              "Team Members",
+              "Percentage Complete",
+              "Actual Expenditure",
+              "% of Budget",
+              "Remarks",
+            ],
+          ],
+          body: sectionReports.map((report) => [
+            report.scopes?.map((scope) => scope.details).join(", "),
+            report.weeklyTarget,
+            report.actualWorkDone,
+            report.scopes
+              ?.flatMap((scope) =>
+                scope.assignedTeamMembers?.map(
+                  (member) => `${member.firstname} ${member.lastname}`,
+                ),
+              )
+              .join(", "),
+            `${report.percentageComplete.toFixed(2)}%`,
+            `${report.actualExpenditure} ${report.currency}`,
+            `${report.percentOfBudget?.toFixed(2)}%`,
+            report.remarks,
+          ]),
+          startY,
+          styles: { overflow: "linebreak", cellPadding: 3 },
+          columnStyles: {
+            0: { halign: "left" },
+            1: { halign: "center" },
+            2: { halign: "right" },
+          },
+          didParseCell: function (data) {
+            if (data.column.index === 8) {
+              // Assuming "Actions" is the last column
+              data.cell.styles.fillColor = [255, 255, 255]; // Hide by setting white background
+              data.cell.text = ""; // Remove text
+            }
+          },
+        });
+
+        // Adjust startY for the next section
+        startY = doc.lastAutoTable.finalY + 15; // Add spacing between tables
+      });
+
+      // Save the PDF
+      const fileName = `Monthly_WorkPlans_${new Date().toISOString()}.pdf`;
+      doc.save(fileName);
+    };
+  };
   // Export table as Excel
   const exportAsExcel = () => {
     const table = document.getElementById("data-table");
@@ -399,7 +510,7 @@ const WeeklyReport: React.FC<MonthlyTableProps> = ({
             return await getAllWorkPlansFilter({ year, month, week });
           }),
         );
-      //  console.log(response.flat());
+        //  console.log(response.flat());
         setReports(response.flat());
       } catch (error: any) {
         console.log("");

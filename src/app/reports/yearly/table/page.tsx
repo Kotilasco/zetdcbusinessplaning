@@ -79,6 +79,7 @@ import { hasPermission } from "@/permissions";
 import { currentRole } from "@/lib/auth";
 import { useCurrentRole } from "@/hooks/use-current-role";
 import { getWorkplansForYearAndQuarterByStatus } from "@/app/actions/getWorkplansForYearAndQuarterByStatus";
+import { getSectionNameById } from "@/app/actions/getSectionsFromDepartment";
 
 interface YearlyTableProps {
   year: string;
@@ -92,13 +93,33 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
   const [submitted, setSubmitted] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Number of rows per page
+
+  // Calculate total pages
+  const totalPages = Math.ceil((reports?.length || 0) / itemsPerPage);
+
+  // Get the data for the current page
+  const paginatedReports = reports?.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  // Handle page change
+  const changePage = (pageNumber) => {
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+    }
+  };
+
   const role = useCurrentRole();
 
   // Table reference for printing
   const tableRef = useRef(null);
 
   // Export table as PDF
-  const exportAsPDF = () => {
+  /* const exportAsPDF = () => {
     const doc = new jsPDF();
     // Add logo
     const logoUrl = "/images/logo/zetdc.png"; // Your logo file in public folder or external URL
@@ -147,6 +168,123 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
 
       const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
       doc.save(`WorkPlans_${timestamp}.pdf`);
+    };
+  }; */
+
+  // Export table as PDF
+  const exportAsPDF = async () => {
+    const doc = new jsPDF();
+
+    // Add logo
+    const logoUrl = "/images/logo/zetdc.png"; // Your logo file
+    const img = new Image();
+    img.src = logoUrl;
+
+    img.onload = async () => {
+      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
+
+      // Add a header after the logo
+      doc.setFontSize(18);
+      doc.setFont("Algerian", "bold");
+      doc.text(
+        `Report For Quarter ${quarter} of ${year} for ${status} tasks`,
+        50,
+        20,
+      ); // Adjust x and y position
+
+      // Draw a line under the header
+      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
+
+      // Group data by sectionId
+      const groupedReports = reports.reduce((acc, report) => {
+        const sectionId = report.sectionId;
+        if (!acc[sectionId]) {
+          acc[sectionId] = [];
+        }
+        acc[sectionId].push(report);
+        return acc;
+      }, {});
+
+      let startY = 40; // Initial Y position for the table
+
+      // Fetch section names for each sectionId
+      const sectionNames = await Promise.all(
+        Object.keys(groupedReports).map(async (sectionId) => ({
+          sectionId,
+          name: await getSectionNameById(sectionId),
+        })),
+      );
+
+      // Create a map of sectionId to sectionName for quick lookup
+      const sectionNameMap = sectionNames.reduce((acc, { sectionId, name }) => {
+        acc[sectionId] = name;
+        return acc;
+      }, {});
+
+      // Iterate over grouped data and add each section's table
+      Object.keys(groupedReports).forEach((sectionId, index) => {
+        const sectionReports = groupedReports[sectionId];
+
+        // Add section header
+        const sectionName = sectionNameMap[sectionId] || `Section ${sectionId}`;
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text(sectionName, 10, startY); // Use fetched section name
+        startY += 10;
+
+        // Add the table for this section
+        autoTable(doc, {
+          head: [
+            [
+              "Activity",
+              "Weekly Target",
+              "Actual Work Done",
+              "Team Members",
+              "Percentage Complete",
+              "Actual Expenditure",
+              "% of Budget",
+              "Remarks",
+            ],
+          ],
+          body: sectionReports.map((report) => [
+            report.scopes?.map((scope) => scope.details).join(", "),
+            report.weeklyTarget,
+            report.actualWorkDone,
+            report.scopes
+              ?.flatMap((scope) =>
+                scope.assignedTeamMembers?.map(
+                  (member) => `${member.firstname} ${member.lastname}`,
+                ),
+              )
+              .join(", "),
+            `${report.percentageComplete.toFixed(2)}%`,
+            `${report.actualExpenditure} ${report.currency}`,
+            `${report.percentOfBudget?.toFixed(2)}%`,
+            report.remarks,
+          ]),
+          startY,
+          styles: { overflow: "linebreak", cellPadding: 3 },
+          columnStyles: {
+            0: { halign: "left" },
+            1: { halign: "center" },
+            2: { halign: "right" },
+          },
+          didParseCell: function (data) {
+            if (data.column.index === 8) {
+              // Assuming "Actions" is the last column
+              data.cell.styles.fillColor = [255, 255, 255]; // Hide by setting white background
+              data.cell.text = ""; // Remove text
+            }
+          },
+        });
+
+        // Adjust startY for the next section
+        startY = doc.lastAutoTable.finalY + 15; // Add spacing between tables
+      });
+
+      // Save the PDF
+      const fileName = `Yearly_WorkPlans_${new Date().toISOString()}.pdf`;
+      doc.save(fileName);
     };
   };
 
@@ -221,7 +359,7 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
     <div className="p-4">
       <h1 className="mb-4 text-2xl font-bold">Year Report</h1>
       <div className="no-scrollbar overflow-x-auto" ref={tableRef}>
-        <table
+        {/* <table
           id="data-table"
           className="w-full border-collapse border border-gray-300"
         >
@@ -300,7 +438,112 @@ const YearReport: React.FC<YearlyTableProps> = ({ year, quarter, status }) => {
                   </tr>
                 ))}
           </tbody>
-        </table>
+        </table> */}
+        <div>
+          <table
+            id="data-table"
+            className="w-full border-collapse border border-gray-300"
+          >
+            <thead className="bg-black text-white">
+              <tr>
+                <th className="border p-2">Activity</th>
+                <th className="border p-2">Weekly Target</th>
+                <th className="border p-2">Actual Work Done</th>
+                <th className="border p-2">Team Members</th>
+                <th className="border p-2">Percentage Complete</th>
+                <th className="border p-2">Actual Expenditure</th>
+                <th className="border p-2">% of Budget</th>
+                <th className="border p-2">Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {isLoading
+                ? // Display skeleton loader rows
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index} className="border">
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      <td className="border p-2">
+                        <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                      </td>
+                      {role && hasPermission([role], "update:report") && (
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                : // Display actual data rows
+                  paginatedReports?.map((report, index) => (
+                    <tr key={index} className="border">
+                      <td className="border p-2">
+                        {report.scopes
+                          ?.map((scope) => scope.details)
+                          .join(", ")}
+                      </td>
+                      <td className="border p-2">{report.weeklyTarget}</td>
+                      <td className="border p-2">{report.actualWorkDone}</td>
+                      <td className="border p-2">
+                        {report.scopes
+                          ?.flatMap((scope) =>
+                            scope.assignedTeamMembers?.map(
+                              (member) =>
+                                member.firstname + " " + member.lastname,
+                            ),
+                          )
+                          .join(", ")}
+                      </td>
+                      <td className="border p-2">
+                        {report.percentageComplete}
+                      </td>
+                      <td className="border p-2">{report.actualExpenditure}</td>
+                      <td className="border p-2">{report.percentOfBudget}</td>
+                      <td className="border p-2">{report.remarks}</td>
+                    </tr>
+                  ))}
+            </tbody>
+          </table>
+
+          {/* Pagination Controls */}
+          <div className="mt-4 flex items-center justify-between">
+            <button
+              className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+              onClick={() => changePage(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              className="rounded bg-gray-300 px-4 py-2 text-black disabled:opacity-50"
+              onClick={() => changePage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
       <div className="mt-4 space-x-4">
         <button

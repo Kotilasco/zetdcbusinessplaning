@@ -19,6 +19,9 @@ export default function TaskDetails({ params }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  let overdue = false;
+  let daysOverdue;
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -61,7 +64,17 @@ export default function TaskDetails({ params }) {
 
   const scope = data?.scopes[0];
 
-  console.log(files);
+  if (new Date(scope.targetCompletionDate) < new Date()) {
+    overdue = true;
+    const currentDate = new Date();
+    const targetDate = new Date(scope.targetCompletionDate);
+    daysOverdue = Math.floor(
+      (currentDate - targetDate) / (1000 * 60 * 60 * 24),
+    ); // Calculate days
+    console.log(`Task is overdue by ${daysOverdue} days.`);
+  }
+
+  // console.log(files);
 
   return (
     <DefaultLayout>
@@ -130,11 +143,17 @@ export default function TaskDetails({ params }) {
         <section className="mb-8 rounded-md bg-white p-4 shadow-md">
           <h2 className="mb-4 text-xl font-semibold text-gray-700">Progress</h2>
           <div className="relative">
+            {overdue && (
+              <p className=" text-center font-bold text-gray-800">
+                This task is overdue by {daysOverdue} days
+              </p>
+            )}
             <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-gray-200">
               <CircularProgress
                 percentage={parseFloat(
                   (data.percentageComplete || 0).toFixed(2),
                 )}
+                overdue={overdue}
               />
             </div>
             <p className="mt-2 text-center font-bold text-gray-800">
@@ -191,7 +210,7 @@ export default function TaskDetails({ params }) {
     </DefaultLayout>
   );
 }
-export function CircularProgress({ percentage }) {
+export function CircularProgress({ percentage, overdue }) {
   const radius = 50;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percentage / 100) * circumference;
@@ -217,15 +236,21 @@ export function CircularProgress({ percentage }) {
           cy="60"
           r={radius}
           fill="none"
-          stroke="#3b82f6"
+          stroke={overdue ? "#ff0000" : "#3b82f6"} // Blue progress color
           strokeWidth="10"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
         />
       </svg>
-      <div className="absolute text-center text-2xl font-bold text-gray-700">
+      {/* <div className="absolute text-center text-2xl font-bold text-gray-700">
         {percentage}%
-      </div>
+      </div> */}
+
+      <span
+        className={`absolute text-xl font-bold ${overdue ? "text-red-500" : " text-blue-600"}`}
+      >
+        {percentage}%
+      </span>
     </div>
   );
 }

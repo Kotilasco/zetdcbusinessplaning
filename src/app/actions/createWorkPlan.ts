@@ -36,6 +36,7 @@ export async function createWorkPlan(workplan: WorkPlan) {
   "weeklyTarget": workplan.weeklyTarget,
   "actualWorkDone": 0,
   "percentageComplete": 0,
+  'planName': workplan.planName,
   "actualExpenditure": 0,
   "percentOfBudget": 0,
   "status": "IN_PROGRESS",

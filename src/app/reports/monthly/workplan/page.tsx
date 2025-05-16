@@ -77,6 +77,14 @@ export const FormSchema = z.object({
   weeklyTarget: z.string({
     required_error: "Please enter a weekly target.",
   }),
+  planName: z
+    .string()
+    .min(2, {
+      message: "Plan name must be at least 2 characters.",
+    })
+    .max(100, {
+      message: "Plan name must not exceed 100 characters.",
+    }),
   scope: z.string().min(2, {
     message: "Username must be at least 2 characters.",
   }),
@@ -93,6 +101,7 @@ export default function SelectForm() {
     month: "",
     week: "",
     scope: "",
+    planName: "",
     teamMembers: [],
     startDate: null,
     target: null,
@@ -135,13 +144,6 @@ export default function SelectForm() {
   const [submitted, setSubmitted] = useState(false);
   const [members, setMembers] = useState(null);
   const [section, setSection] = useState(null);
-
-  const teamMembers = [
-    { id: "1", name: "Alice" },
-    { id: "2", name: "Bob" },
-    { id: "3", name: "Charlie" },
-    { id: "4", name: "Diana" },
-  ];
 
   const years = Array.from({ length: 1 }, (_, i) => 2025 + i);
 
@@ -259,11 +261,7 @@ export default function SelectForm() {
 
       // Add a header after the logo
       doc.setFontSize(18);
-      doc.text(
-        `Work Plans Module For ${month} ${year}`,
-        50,
-        20,
-      ); // Adjust x and y position
+      doc.text(`Work Plans Module For ${month} ${year}`, 50, 20); // Adjust x and y position
 
       doc.setFontSize(14);
       doc.text(`Section: ${section?.name}`, 50, 30); // Adjust x and y position
@@ -354,6 +352,7 @@ export default function SelectForm() {
                 <tr>
                   <th className="border p-2">Month</th>
                   <th className="border p-2">Week</th>
+                  <th className="border p-2">Plan Name</th>
                   <th className="border p-2">Scope</th>
                   <th className="border p-2">Team Members</th>
                 </tr>
@@ -375,6 +374,9 @@ export default function SelectForm() {
                         <td className="border p-2">
                           <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
                         </td>
+                        <td className="border p-2">
+                          <div className="skeleton-loader h-4 w-full animate-pulse bg-gray-200"></div>
+                        </td>
                       </tr>
                     ))
                   : // Display actual data rows
@@ -382,6 +384,7 @@ export default function SelectForm() {
                       <tr key={index} className="border">
                         <td className="border p-2">{plan.month}</td>
                         <td className="border p-2">{plan.week}</td>
+                        <td className="border p-2">{plan.planName}</td>
                         <td className="border p-2">
                           {plan.scopes
                             ?.map((scope) => scope.details)
@@ -535,6 +538,25 @@ export default function SelectForm() {
                               </SelectGroup>
                             </SelectContent>
                           </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="planName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Plan Name</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Write a simple description of the plan"
+                              className="resize-none"
+                              {...field}
+                            />
+                          </FormControl>
+
                           <FormMessage />
                         </FormItem>
                       )}

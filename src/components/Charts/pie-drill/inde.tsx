@@ -112,7 +112,7 @@ const DonutChart = () => {
         year: filters.year,
         currency: filters.currency,
       });
-      console.log(response);
+      // console.log(response);
       setData(response);
     } catch (err) {
       setError("Failed to fetch data. Please try again later.");

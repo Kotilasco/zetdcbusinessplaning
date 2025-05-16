@@ -296,7 +296,7 @@ export const POST = async (req: NextRequest) => {
             xmlRequest
         );
 
-        console.log(response);
+        // console.log(response);
 
         // Return success response
         return new NextResponse(

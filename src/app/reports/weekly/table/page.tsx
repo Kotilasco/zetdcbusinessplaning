@@ -406,104 +406,6 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   }; */
 
   // Export table as PDF
-  /* const exportAsPDF = () => {
-    const doc = new jsPDF();
-
-    // Add logo
-    const logoUrl = "/images/logo/zetdc.png"; // Your logo file
-    const img = new Image();
-    img.src = logoUrl;
-
-    img.onload = () => {
-      doc.addImage(img, "PNG", 10, 5, 30, 30); // Position (x, y) and size (width, height)
-
-      // Add a header after the logo
-      doc.setFontSize(18);
-      doc.text(
-        `Report For Week ${parseInt(week.substring(4))} of ${month} ${year}`,
-        50,
-        20,
-      ); // Adjust x and y position
-
-      // Draw a line under the header
-      doc.line(10, 35, 200, 35); // From (x1, y1) to (x2, y2)
-
-      // Group data by sectionId
-      const groupedReports = reports.reduce((acc, report) => {
-        const sectionId = report.sectionId;
-        if (!acc[sectionId]) {
-          acc[sectionId] = [];
-        }
-        acc[sectionId].push(report);
-        return acc;
-      }, {});
-
-      let startY = 40; // Initial Y position for the table
-
-      // Iterate over grouped data and add each section's table
-      Object.keys(groupedReports).forEach((sectionId, index) => {
-        const sectionReports = groupedReports[sectionId];
-
-        // Add section header
-        doc.setFontSize(14);
-        doc.text(`Section ${sectionId}`, 10, startY); // Replace with section name if available
-        startY += 10;
-
-        // Add the table for this section
-        autoTable(doc, {
-          head: [
-            [
-              "Activity",
-              "Weekly Target",
-              "Actual Work Done",
-              "Team Members",
-              "Percentage Complete",
-              "Actual Expenditure",
-              "% of Budget",
-              "Remarks",
-            ],
-          ],
-          body: sectionReports.map((report) => [
-            report.scopes?.map((scope) => scope.details).join(", "),
-            report.weeklyTarget,
-            report.actualWorkDone,
-            report.scopes
-              ?.flatMap((scope) =>
-                scope.assignedTeamMembers?.map(
-                  (member) => `${member.firstname} ${member.lastname}`,
-                ),
-              )
-              .join(", "),
-            `${report.percentageComplete.toFixed(2)}%`,
-            `${report.actualExpenditure} ${report.currency}`,
-            `${report.percentOfBudget?.toFixed(2)}%`,
-            report.remarks,
-          ]),
-          startY,
-          styles: { overflow: "linebreak", cellPadding: 3 },
-          columnStyles: {
-            0: { halign: "left" },
-            1: { halign: "center" },
-            2: { halign: "right" },
-          },
-          didParseCell: function (data) {
-            if (data.column.index === 8) {
-              // Assuming "Actions" is the last column
-              data.cell.styles.fillColor = [255, 255, 255]; // Hide by setting white background
-              data.cell.text = ""; // Remove text
-            }
-          },
-        });
-
-        // Adjust startY for the next section
-        startY = doc.lastAutoTable.finalY + 15; // Add spacing between tables
-      });
-
-      // Save the PDF
-      const fileName = `WorkPlans_${new Date().toISOString()}.pdf`;
-      doc.save(fileName);
-    };
-  }; */
   const exportAsPDF = async () => {
     const doc = new jsPDF();
 
@@ -617,6 +519,39 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
       doc.save(fileName);
     };
   };
+
+  /* const exportAsPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Work Plans", 14, 10);
+
+    const table = document.getElementById("data-table");
+    if (!table) {
+      console.error("Table element not found!");
+      return;
+    }
+
+    // Extract headers excluding "Actions"
+    const headers = [...table.querySelectorAll("th")]
+      .filter((header) => header.innerText.trim() !== "Actions")
+      .map((header) => header.innerText);
+
+    // Extract row data excluding "Actions"
+    const rows = [...table.querySelectorAll("tr")].map((row) =>
+      [...row.querySelectorAll("td")]
+        .filter((cell) => cell.cellIndex !== 8) // Adjust index if needed
+        .map((cell) => cell.innerText),
+    );
+
+    autoTable(doc, {
+      head: [headers],
+      body: rows.filter((row) => row.length > 0),
+      startY: 20,
+    });
+
+    const timestamp = new Date().toISOString().replace(/[-:.]/g, "");
+    doc.save(`Weekly_WorkPlans_${timestamp}.pdf`);
+  }; */
+
   // Export table as Excel
   const exportAsExcel = () => {
     const table = document.getElementById("data-table");
