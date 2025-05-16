@@ -16,7 +16,7 @@ import { makeData, Expenditure } from './makeData'
 import './index.css'
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 
-import { Metadata } from "next";
+
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import SettingBoxes from "@/components/SettingBoxes";
 

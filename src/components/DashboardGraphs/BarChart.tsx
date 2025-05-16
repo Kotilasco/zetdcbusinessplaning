@@ -1,6 +1,7 @@
+//@ts-nocheck
 "use client";
 
-import { getDepartmentWorkSummary } from "@/app/actions/departmentWorkSummary";
+
 import React, { useEffect, useState } from "react";
 import {
   BarChart,
@@ -20,33 +21,6 @@ import {
 
 const BarCHart = ({ departmentData }: any) => {
   const [isLoading, setIsLoading] = useState(true);
-
-  /*   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate API call with a timeout
-        const response = await getDepartmentWorkSummary();
-        setDepartmentData(response);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []); */
-
-  /*  if (isLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        Loading...
-      </div>
-    );
-  } */
-
-  console.log(departmentData);
 
   if (!departmentData) {
     return (

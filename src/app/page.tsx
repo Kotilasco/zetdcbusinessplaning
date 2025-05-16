@@ -3,7 +3,6 @@ import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import React from "react";
 import DashboardPage from "@/components/Dash";
-import { LoginForm } from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
   title: "Zetdc Performace Reporting System",
@@ -14,7 +13,6 @@ export default function Home() {
   return (
     <>
       <DefaultLayout>
-        {/*  <ECommerce /> */}
         <DashboardPage />
       </DefaultLayout>
     </>

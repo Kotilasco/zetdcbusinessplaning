@@ -19,7 +19,6 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { changePassword } from "@/app/actions/login";
-import ChangePassword from "../../app/auth/(auth)/change-password/page";
 
 export function ChangePasswordForm() {
   const [isPending, startTransition] = useTransition();

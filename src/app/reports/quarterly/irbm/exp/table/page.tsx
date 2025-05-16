@@ -101,16 +101,7 @@ const columns: ColumnDef<Expenditure>[] = [
     },
   ]
 
-import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
 
-import { Metadata } from "next";
-import DefaultLayout from "@/components/Layouts/DefaultLaout";
-import SettingBoxes from "@/components/SettingBoxes";
-
-/* export const metadata: Metadata = {
-  title: "Next.js QuarterlyReports Page | NextAdmin - Next.js Dashboard c",
-  description: "This is Next.js QuarterlyReports page for NextAdmin Dashboard Kit",
-}; */
 
 const QuarterlyReports = () => {
 

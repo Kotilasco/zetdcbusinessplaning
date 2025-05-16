@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { register, registration } from "@/app/actions/register";
-import { ComboboxForm } from "./Reference";
+import { registration  } from "@/app/actions/register";
 import {
   Command,
   CommandEmpty,

@@ -65,10 +65,6 @@ export const metadata: Metadata = {
   description: "Zetdc Performance Reporting System",
 };
 
-const rev = await getAllWorkPlansBySection();
-
-const revenueData = processTaskData(rev);
-
 function SkeletonLoader() {
   return (
     <div>
@@ -98,13 +94,15 @@ async function RevenueData({
 export default async function DashboardPage() {
   const role = await currentRole();
   const revenueDataPromise = fetchRevenueData();
+  const rev = await getAllWorkPlansBySection();
+
+  const revenueData = processTaskData(rev);
   const departmentData = await getDepartmentWorkSummary();
 
   let pieData = await getPieDataForOverdueDeptTasks();
 
-  /*  role === UserRoles.ROLE_SENIORMANAGER &&
-    (pieData = await getPieDataForOverdueDeptTasks()); */
-  console.log(pieData);
+  role === UserRoles.ROLE_SENIORMANAGER &&
+    (pieData = await getPieDataForOverdueDeptTasks());
 
   return (
     <>
@@ -175,7 +173,7 @@ export default async function DashboardPage() {
             </TabsContent>
             <TabsContent value="analytics" className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+                {/* <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                       Total Expenditure
@@ -195,39 +193,12 @@ export default async function DashboardPage() {
                   </CardHeader>
                   <CardContent>
                     <Suspense fallback={<SkeletonLoader />}>
-                      {/* Fetch and display actual data */}
+                     
                       <RevenueData revenueDataPromise={revenueDataPromise} />
                     </Suspense>
                   </CardContent>
-                </Card>
-                {/* <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                      Overdue Tasks
-                    </CardTitle>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M12 6v6l4 2" />
-                    </svg>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">
-                      +{revenueData?.overdueCount}
-                    </div>
-                    <p className="text-xs text-muted-foreground">
-                      Number of tasks past the due date
-                    </p>
-                  </CardContent>
                 </Card> */}
+
                 <Card>
                   <Link href="/tasks/overdue">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -329,7 +300,6 @@ export default async function DashboardPage() {
                 <Card className="col-span-8">
                   <CardHeader>
                     <CardTitle>Pie Chart</CardTitle>
-                    {/* <CardDescription>The departments present</CardDescription> */}
                   </CardHeader>
                   <CardContent className="pl-2">
                     <PieGraph departmentData={departmentData} />
@@ -344,7 +314,6 @@ export default async function DashboardPage() {
                       <CardTitle>
                         Comparison of overdue department tasks
                       </CardTitle>
-                      {/*  <CardDescription>The departments present</CardDescription> */}
                     </CardHeader>
                     <CardContent className="pl-2">
                       <DepartmentPieChart pieData={pieData} />
@@ -357,7 +326,6 @@ export default async function DashboardPage() {
               <div className="grid gap-4 ">
                 {role && hasPermission([role], "division:reports") && (
                   <Card className="col-span-4">
-                    {/* <Landing /> */}
                     <DonutChart />
                   </Card>
                 )}
@@ -388,17 +356,6 @@ export default async function DashboardPage() {
                     <RecentActivities />
                   </CardContent>
                 </Card>
-                {/*  <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Overdue tasks</CardTitle>
-                    <CardDescription>
-                      The overdue tasks for your department
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    
-                  </CardContent>
-                </Card> */}
               </div>
             </TabsContent>
             <TabsContent value="create" className="space-y-4">

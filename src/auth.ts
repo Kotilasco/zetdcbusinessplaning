@@ -1,4 +1,4 @@
-// @ts-nocheck
+//@ts-nocheck
 
 import { ExtendedUser } from '@/next-auth';
 import NextAuth from "next-auth"
@@ -21,7 +21,7 @@ export const {
 
             const isLoggedIn = !!auth?.user;
 
-      //      console.log(auth)
+     //       console.log(auth)
 
             const isOnDashboard = nextUrl.pathname.startsWith('/');
             if (isOnDashboard) {
@@ -42,7 +42,7 @@ export const {
             return true;
         },
         async jwt({ token, user, account }) {
-         /*    console.log("JWT callback - token before processing:", token);
+           /* console.log("JWT callback - token before processing:", token);
             console.log("JWT callback - user:", user); */ // Will only be available on initial sign-in
 
             // 1. If this is the initial sign-in, add user information to the token
@@ -75,13 +75,13 @@ export const {
         },
         async session({ token, session }) {
 
-         /*    console.log("Session callback - token:", token);
+           /* console.log("Session callback - token:", token);
             console.log("Session callback - session:", session); */
 
             if (token) {
                 session.user.email = token.email;
                 session.user.firstname = token.firstname;
-                session.user.lastname = token.lastname;   
+                session.user.lastname = token.lastname;    
                 session.user.sectionId = token.sectionId;
                 session.user.departmentId = token.departmentId;
                 session.user.role = token.role;
@@ -90,7 +90,7 @@ export const {
                 session.user.divisionId = token.divisionId;
             }
 
-         //   console.log("Session callback - session after processing:", session);
+           //  console.log("Session callback - session after processing:", session);
 
             return session;
         },
@@ -107,7 +107,7 @@ export const {
 
 async function refreshAccessToken(token) {
     try {
-       // console.log("Refreshing access token...", token.refresh_token);
+       //  console.log("Refreshing access token...", token.refresh_token);
 
         const response = await fetch(`${process.env.BASE_URL}/api/v1/auth/refresh-token`, {
             method: "POST",
