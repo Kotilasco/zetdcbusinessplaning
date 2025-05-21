@@ -82,7 +82,8 @@ export async function createMemberByManager(data: z.infer<typeof MemberCreationS
         "ecNumber": data.ecnum,
         "designation": data.designation,
         "sectionId": session?.user?.sectionId,
-        "departmentId": session?.user?.departmentId
+        "departmentId": session?.user?.departmentId,
+        'divisionId': session?.user?.divisionId,
       }
 
     try {

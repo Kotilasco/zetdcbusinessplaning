@@ -57,7 +57,7 @@ export const createUser = async (values: z.infer<typeof UserCreationSchema>) => 
 
 
 
-    const { firstname, lastname, email, role, department, section } = validatesFields.data;
+    const { firstname, lastname, email, role, department, section, division } = validatesFields.data;
 
 
 
@@ -69,7 +69,8 @@ export const createUser = async (values: z.infer<typeof UserCreationSchema>) => 
             email,
             role,
             departmentId: department,
-            sectionId: section
+            sectionId: section,
+            divisionId: division,
         }),
         headers: { 'Content-Type': 'application/json' }
     })

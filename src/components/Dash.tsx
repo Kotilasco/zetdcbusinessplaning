@@ -127,7 +127,10 @@ export default async function DashboardPage() {
               )}
             </TabsList>
             <TabsContent value="overview" className="space-y-4">
-              <div className="grid gap-4 ">
+              <div
+                className="grid gap-4" // Add these Tailwind classes  bg-cover bg-center
+              //  style={{ backgroundImage: `url('/images/logo/lightmode.jpg')` }}
+              >
                 <Card className="col-span-4">
                   <CardHeader>
                     <CardTitle>

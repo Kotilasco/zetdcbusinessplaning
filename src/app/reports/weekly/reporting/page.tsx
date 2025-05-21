@@ -217,7 +217,10 @@ function WeeklyReport() {
 
   return (
     <DefaultLayout>
-      <div className="p-4">
+      <div
+        className=" p-4 "
+        // style={{ backgroundImage: `url('/images/logo/lightmode.jpg')` }}
+      >
         <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
         <div className="no-scrollbar overflow-x-auto">
           <table className="w-full border-collapse border border-gray-300">
@@ -283,7 +286,8 @@ function WeeklyReport() {
                         {report.scopes
                           ?.flatMap((scope) =>
                             scope.assignedTeamMembers?.map(
-                              (member) => member.firstname + " " + member.lastname,
+                              (member) =>
+                                member.firstname + " " + member.lastname,
                             ),
                           )
                           .join(", ")}

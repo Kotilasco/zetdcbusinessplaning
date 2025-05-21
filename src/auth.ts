@@ -9,6 +9,7 @@ export const {
     auth,
     signIn,
     signOut,
+    unstable_update,
 } = NextAuth({
     pages: {
         signIn: "/auth/login",
@@ -16,38 +17,41 @@ export const {
     },
 
     callbacks: {
-        authorized({ auth, request: { nextUrl } }) {
-            console.log(auth?.user)
+       authorized({ auth, request: { nextUrl } }) {
+    const isLoggedIn = !!auth?.user;
 
-            const isLoggedIn = !!auth?.user;
-
-     //       console.log(auth)
-
-            const isOnDashboard = nextUrl.pathname.startsWith('/');
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
+    if (nextUrl.pathname.startsWith('/')) {
+         if (isLoggedIn) return true;
                 return false; // Redirect unauthenticated users to login page
-            } else if (isLoggedIn) {
-                return Response.redirect(new URL('/', nextUrl));
-            }
-            return true;
-        },
+    }
+
+    if (!isLoggedIn) {
+        throw new Error("Redirect to login required");
+    }
+
+    return true;
+},
         async signIn({ user }) {
-          //  console.log(user)
+         //   console.log(user)
             if (user.temporaryPassword) {
               //  console.log("here we go")
                 throw new Error("Please change your passsword")
                 return Response.redirect(new URL('/auth/change-password')); // Redirect to change password page
             }
             return true;
+
         },
-        async jwt({ token, user, account }) {
-           /* console.log("JWT callback - token before processing:", token);
+        async jwt({ token, user, account}) {
+          /*  console.log("JWT callback - token before processing:", token);
             console.log("JWT callback - user:", user); */ // Will only be available on initial sign-in
 
+            /*   if (trigger === "update") {
+            token.name = session?.user?.name;
+            token.email = session?.user?.email;
+        } */
             // 1. If this is the initial sign-in, add user information to the token
             if (user) {
-               // console.log("JWT callback - Initial sign-in");
+             //   console.log("JWT callback - Initial sign-in");
                 return {
                     ...token,
                     access_token: user.access_token,
@@ -63,20 +67,25 @@ export const {
                 };
             }
 
+           
+
+
             // 2. If it's not the initial sign-in, simply return the existing token
             if (Date.now() < token.accessTokenExpires) {
-               // console.log("JWT callback - Token is still valid");
+             //   console.log("JWT callback - Token is still valid");
                 return token;
             }
 
             // 3. If the token is expired, refresh it
-            console.log("JWT callback - Token expired, attempting to refresh");
+          //  console.log("JWT callback - Token expired, attempting to refresh");
             return await refreshAccessToken(token);
+
+           //return token;
         },
         async session({ token, session }) {
 
-           /* console.log("Session callback - token:", token);
-            console.log("Session callback - session:", session); */
+        //    console.log("Session callback - token:", token);
+        //     console.log("Session callback - session:", session);
 
             if (token) {
                 session.user.email = token.email;
@@ -90,11 +99,12 @@ export const {
                 session.user.divisionId = token.divisionId;
             }
 
-           //  console.log("Session callback - session after processing:", session);
+          //   console.log("Session callback - session after processing:", session);
 
             return session;
         },
     },
+    secret: process.env.AUTH_SECRET,
     session: {
         strategy: "jwt",
         maxAge: 30 * 60, // Session expiration time in seconds (e.g., 30 minutes)
@@ -117,11 +127,11 @@ async function refreshAccessToken(token) {
             body: JSON.stringify({ refreshToken: token.refresh_token }),
         });
 
-        console.log("Response from refresh token endpoint:", response); // Debugging log
+      //  console.log("Response from refresh token endpoint:", response); // Debugging log
 
         const refreshedTokens = await response.json();
 
-      //  console.log("Refreshed tokens:", refreshedTokens);
+       // console.log("Refreshed tokens:", refreshedTokens);
 
         if (!response.ok) throw new Error("Failed to refresh token");
 

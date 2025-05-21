@@ -1,17 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import ClickOutside from "@/components/ClickOutside";
 import { useCurrentUser } from "@/hooks/use-current-user";
+import { useSession } from "next-auth/react";
 
 const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const user = useCurrentUser();
-
-  console.log(user);
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -25,17 +24,14 @@ const DropdownUser = () => {
             width={112}
             height={112}
             src="/images/logo/zetdc.png"
-            style={{
-              width: "auto",
-              height: "auto",
-            }}
+            style={{ width: "auto", height: "auto" }}
             alt="User"
             className="overflow-hidden rounded-full"
           />
         </span>
 
         <span className="flex items-center gap-2 font-medium text-dark dark:text-dark-6">
-          <span className="hidden lg:block">{user?.email || "jdjkjfkjfd"}</span>
+          <span className="hidden lg:block">{user?.email || "No User"}</span>
 
           <svg
             className={`fill-current duration-200 ease-in ${dropdownOpen && "rotate-180"}`}
@@ -66,10 +62,7 @@ const DropdownUser = () => {
                 width={112}
                 height={112}
                 src="/images/logo/zetdc.png"
-                style={{
-                  width: "auto",
-                  height: "auto",
-                }}
+                style={{ width: "auto", height: "auto" }}
                 alt="User"
                 className="overflow-hidden rounded-full"
               />

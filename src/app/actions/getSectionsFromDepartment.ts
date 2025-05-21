@@ -55,10 +55,10 @@ export async function getSectionById(sectionId?: string) {
   try {
     //console.log("hello");
 
-    let sectionId = sectionId || session?.user?.sectionId;
+    let secId = sectionId || session?.user?.sectionId;
 
     const response = await fetch(
-      `${process.env.BASE_URL}/api/sections/findById/${sectionId}`,
+      `${process.env.BASE_URL}/api/sections/findById/${secId}`,
       {
         method: "GET",
         headers: {

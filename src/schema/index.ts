@@ -153,8 +153,9 @@ export const UserCreationSchema = z.object({
         .min(2, {
             message: "Reference number must be at least 4 characters long.",
         }),
-        department: z.number({required_error: "Please enter a valid EC number"}),
-        section: z.number({required_error: "Please enter a valid EC number"}),
+        department: z.number({required_error: "Please enter a valid department id"}),
+        section: z.number({required_error: "Please enter a valid section id"}),
+        division: z.number({required_error: "Please enter a valid division id"}),
 
 })
 

@@ -2,8 +2,11 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useCurrentUser } from "@/hooks/use-current-user";
 
 const ProfileBox = () => {
+  const user = useCurrentUser();
+
   return (
     <>
       <div className="overflow-hidden rounded-[10px] bg-white shadow-1 dark:bg-gray-dark dark:shadow-card">
@@ -56,7 +59,7 @@ const ProfileBox = () => {
           <div className="relative z-30 mx-auto -mt-22 h-30 w-full max-w-30 rounded-full bg-white/20 p-1 backdrop-blur sm:h-44 sm:max-w-[176px] sm:p-3">
             <div className="relative drop-shadow-2">
               <Image
-                src="/images/user/user-03.png"
+                src="/images/logo/zetdc.png"
                 width={160}
                 height={160}
                 className="overflow-hidden rounded-full"
@@ -95,31 +98,29 @@ const ProfileBox = () => {
           </div>
           <div className="mt-4">
             <h3 className="mb-1 text-heading-6 font-bold text-dark dark:text-white">
-              Danish Heilium
+              {user?.firstname} {user?.lastname}
             </h3>
-            <p className="font-medium">Ui/Ux Designer</p>
+            <p className="font-medium">{user?.email}</p>
             <div className="mx-auto mb-5.5 mt-5 grid max-w-[370px] grid-cols-3 rounded-[5px] border border-stroke py-[9px] shadow-1 dark:border-dark-3 dark:bg-dark-2 dark:shadow-card">
               <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-dark-3 xsm:flex-row">
                 <span className="font-medium text-dark dark:text-white">
-                  259
+                  {user?.firstname}
                 </span>
-                <span className="text-body-sm">Posts</span>
+                <span className="text-body-sm"></span>
               </div>
               <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 dark:border-dark-3 xsm:flex-row">
                 <span className="font-medium text-dark dark:text-white">
-                  129K
+                  {user?.lastname}
                 </span>
-                <span className="text-body-sm">Followers</span>
+                <span className="text-body-sm"></span>
               </div>
               <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
-                <span className="font-medium text-dark dark:text-white">
-                  2K
-                </span>
-                <span className="text-body-sm-sm">Following</span>
+                <span className="font-medium text-dark dark:text-white"></span>
+                <span className="text-body-sm-sm">{user?.role}</span>
               </div>
             </div>
 
-            <div className="mx-auto max-w-[720px]">
+            {/*  <div className="mx-auto max-w-[720px]">
               <h4 className="font-medium text-dark dark:text-white">
                 About Me
               </h4>
@@ -130,9 +131,9 @@ const ProfileBox = () => {
                 ultricies. Sed vel aliquet libero. Nunc a augue fermentum,
                 pharetra ligula sed, aliquam lacus.
               </p>
-            </div>
+            </div> */}
 
-            <div className="mt-4.5">
+            {/*  <div className="mt-4.5">
               <h4 className="mb-3.5 font-medium text-dark dark:text-white">
                 Follow me on
               </h4>
@@ -277,7 +278,7 @@ const ProfileBox = () => {
                   </svg>
                 </Link>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

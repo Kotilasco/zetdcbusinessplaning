@@ -5,7 +5,7 @@ import { LoginSchema } from "@/schema"
 export default {
     providers: [
         Credentials({
-            async authorize(credentials) {
+            async authorize(credentials: any) {
                 const validatedFields = LoginSchema.safeParse(credentials);
 
                 if (validatedFields.success) {
@@ -18,11 +18,9 @@ export default {
                     })
                     const user = await res.json()
 
-                    //console.log(user)
-
-                
-
                     const jwt = user.access_token;
+
+               
 
                     if (res.ok && user) {
                         return {

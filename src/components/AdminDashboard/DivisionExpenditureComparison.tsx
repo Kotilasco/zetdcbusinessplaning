@@ -49,7 +49,7 @@ export default function DivisionExpenditureComparison() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#FF4560", "#0088FE"];
+  //  const COLORS = ["#00C49F", "#FFBB28", "#FF8042", "#FF4560", "#0088FE"];
 
   // Fetch data from the backend
   const fetchData = async () => {
@@ -221,28 +221,37 @@ export default function DivisionExpenditureComparison() {
               />
             </LineChart>
           </ResponsiveContainer> */}
+          <>
+            {/* --- Your Chart Header/Title --- */}
 
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="week" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="budget"
-                stroke="#8dd4d8"
-                name={`Budget ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
-              />
-              <Line
-                type="monotone"
-                dataKey="actual"
-                stroke="#82ca9d"
-                name={`Actual ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+            <h3 style={{ margin: "0 0 10px 0", color: "#333" }}>
+              Budget vs. Actual Performance
+            </h3>
+
+            {/* --- End Chart Header/Title --- */}
+
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={data}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="week" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="budget"
+                  stroke="#ff0000"
+                  name={`Budget ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="actual"
+                  stroke="#0000ff"
+                  name={`Actual ${filters?.currency === "USD" ? "(USD)" : "(ZWG)"}`}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </>
         </>
       )}
     </div>

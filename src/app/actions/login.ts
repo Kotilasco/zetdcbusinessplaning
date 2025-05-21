@@ -6,6 +6,7 @@ import { signIn } from '@/auth'
 import { DEFAULT_LOGIN_REDIRECT } from '@/routes'
 import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation';
+import { getSession } from 'next-auth/react'
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
     const validatedFields = LoginSchema.safeParse(values);
@@ -21,11 +22,16 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     //console.log(email, password)
 
     try {
-        await signIn("credentials", {
+    const result =    await signIn("credentials", {
             email,
             password,
-            redirectTo: DEFAULT_LOGIN_REDIRECT
+            redirect: false
         })
+
+        console.log('JHGFDSA')
+
+        console.log(result)
+        console.log('JHGFDSA')
 
         return { success: "Success" }
     } catch (error) {

@@ -1,5 +1,5 @@
 import "flatpickr/dist/flatpickr.min.css";
-import "jsvectormap/dist/css/jsvectormap.css";
+//import "jsvectormap/dist/css/jsvectormap.css";
 import "@/css/satoshi.css";
 import "@/css/style.css";
 import React, { useEffect, useState } from "react";
@@ -17,12 +17,12 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default async function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: Readonly<{ children: React.ReactNode }>) {
   const session = await auth();
   /*   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState<boolean>(true); */
+
+  //console.log(session);
 
   // const pathname = usePathname();
 

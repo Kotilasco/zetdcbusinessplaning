@@ -54,7 +54,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import Link from "next/link";
-import { getDepartments } from "@/app/actions/getDepartments";
+import { getDepartments, getDivisions } from "@/app/actions/getDepartments";
 import DepartmentCreationForm from "../AdminDashboard/DepartmentCreationForm";
 
 const roles = [
@@ -68,6 +68,7 @@ const roles = [
 function UserCreationForm() {
   const [isPending, startTransition] = useTransition();
   const [departments, setDepartments] = useState(null);
+  const [divisions, setDivisions] = useState(null);
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -89,6 +90,23 @@ function UserCreationForm() {
         const response = await getDepartments();
 
         setDepartments(response);
+      } catch (error: any) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [submitted]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const response = await getDivisions();
+
+        setDivisions(response);
       } catch (error: any) {
         console.log(error);
       } finally {
@@ -302,6 +320,72 @@ function UserCreationForm() {
                   </Popover>
                   <FormDescription>
                     This is the department of the user
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {divisions != null && divisions.length > 0 && (
+            <FormField
+              control={form.control}
+              name="division"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Division</FormLabel>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          className={cn(
+                            "w-full justify-between",
+                            !field.value && "text-muted-foreground",
+                          )}
+                        >
+                          {field.value
+                            ? divisions.find(
+                                (division) => division.id === field.value,
+                              )?.name
+                            : "Select Division"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0 pt-2">
+                      <Command>
+                        <CommandInput placeholder="Search division..." />
+                        <CommandList>
+                          <CommandEmpty>No division selected.</CommandEmpty>
+                          <CommandGroup>
+                            {divisions.map((division) => (
+                              <CommandItem
+                                value={division.id}
+                                key={division.id}
+                                onSelect={() => {
+                                  form.setValue("division", division.id); // Set department ID
+                                }}
+                              >
+                                {division.name}
+                                <Check
+                                  className={cn(
+                                    "ml-auto",
+                                    division.id === field.value
+                                      ? "opacity-100"
+                                      : "opacity-0",
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                  <FormDescription>
+                    This is the division of the user
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

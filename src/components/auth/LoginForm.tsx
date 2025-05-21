@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 "use client";
 
 import React, { useState, useTransition } from "react";
@@ -19,11 +21,15 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { login } from "@/app/actions/login";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+  const { update } = useSession();
+  const router = useRouter();
   const form = useForm<z.infer<typeof LoginSchema>>({
     resolver: zodResolver(LoginSchema),
     defaultValues: {
@@ -39,6 +45,12 @@ export function LoginForm() {
       login(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
+
+        console.log("success");
+        console.log(success);
+        if (data?.success) {
+          window.location.href = "/"; // Navigate to a dashboard or another page
+        }
       });
     });
   };

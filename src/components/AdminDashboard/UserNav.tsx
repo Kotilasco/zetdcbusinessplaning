@@ -27,7 +27,7 @@ export function UserNav() {
 
   const role = useCurrentRole();
   const user = useCurrentUser();
-  console.log(user);
+ // console.log(user);
 
   return (
     <DropdownMenu>

@@ -358,7 +358,7 @@ export default function SelectForm() {
   };
   return (
     <DefaultLayout>
-      <div className="p-4">
+      <div className="p-4 ">
         <h1 className="mb-4 text-2xl font-bold">Work Plan Module</h1>
 
         {/* Work Plan Table */}

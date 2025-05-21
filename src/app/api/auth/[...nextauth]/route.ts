@@ -1,8 +1,11 @@
-import NextAuth from "next-auth";
+/* import NextAuth from "next-auth";
 import authConfig from '@/auth.config';
 
 // Create the NextAuth handler
 const handler = NextAuth(authConfig);
 
 // Export the GET and POST handlers for the route
-export { handler as GET, handler as POST };
+export { handler as GET, handler as POST }; */
+
+export { GET, POST } from "@/auth"
+//export const runtime = "edge"

@@ -658,7 +658,10 @@ const WeeklyReport: React.FC<WeeklyTableProps> = ({
   };
 
   return (
-    <div className="p-4">
+    <div
+      className=" p-4"
+      //style={{ backgroundImage: `url('/images/logo/lightmode.jpg')` }}
+    >
       <h1 className="mb-4 text-2xl font-bold">Weekly Reporting Module</h1>
       <div className="no-scrollbar mb-5 overflow-x-auto" ref={tableRef}>
         <table
