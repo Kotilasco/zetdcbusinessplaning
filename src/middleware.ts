@@ -43,13 +43,18 @@ export default auth((req) => {
     }
 
     if (isAuthRoute) {
+        console.log(isLoggedIn, isPublicRoute);
+        console.log("Auth route:", nextUrl.pathname);
         if (isLoggedIn) {
+            console.log('i am here')
             return Response.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl))
         }
+        console.log('jjkjjdjdjjdj')
         return null;
     }
 
     if (!isLoggedIn && !isPublicRoute) {
+        console.log('reached here')
         let callbackUrl = nextUrl.pathname;
         if (nextUrl.search) {
             callbackUrl += nextUrl.search;

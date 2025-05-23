@@ -13,29 +13,31 @@ interface HeaderProps {
 
 export const Header = ({ label }: HeaderProps) => {
   return (
-    <div className="w-full flex flex-col gap-y-4 items-center justify-center">
-      <div className="flex items-center justify-center m-1 ">
-        <div className=" mx-3">
+    <div className="flex w-full flex-col items-center justify-center gap-y-4">
+      <div className="m-1 flex items-center justify-center">
+        <div className="mx-3">
+          {/* Ensure the image path is correct */}
           <Image
             src={"/images/logo/zetdc.png"}
-            alt="CSMS"
+            alt="Zetdc"
             width={40}
             height={40}
-            className="rounded-full object-contain z-100 p-5"
+            className="rounded-full object-contain p-1"
           />
         </div>
 
+        {/* Make the text white */}
         <h1
           className={cn(
-            "text-lg font-semibold justify-center items-center",
-            font.className
+            "items-center justify-center text-lg font-semibold text-white",
+            font.className,
           )}
         >
-          ZETDC Performance Reporting System
+          Zetdc Performance Reporting
         </h1>
       </div>
 
-      <p className=" text-muted-foreground text-sm">{label}</p>
+      <p className="text-sm text-muted-foreground">{label}</p>
     </div>
   );
 };
