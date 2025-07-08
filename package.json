@@ -44,6 +44,7 @@
     "date-fns": "^3.6.0",
     "flatpickr": "^4.6.13",
     "httpntlm": "^1.8.13",
+    "https": "^1.0.0",
     "input-otp": "^1.4.2",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
