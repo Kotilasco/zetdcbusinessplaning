@@ -8,6 +8,67 @@ import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation';
 import { getSession } from 'next-auth/react'
 
+
+export const firstlogin = async (values: z.infer<typeof LoginSchema>) => {
+    const validatedFields = LoginSchema.safeParse(values);
+
+    if (!validatedFields.success) {
+        return {
+            error: "Invalid fields!"
+        }
+    }
+
+    const { email, password } = validatedFields.data;
+
+    console.log(email, password)
+
+    try {
+    /* const result =    await signIn("credentials", {
+            email,
+            password,
+            redirect: false
+        }) */
+
+            console.log('first login called')
+
+             const res = await fetch(`${process.env.BASE_URL}/api/v1/auth/authenticate`, {
+        method: 'POST',
+        body: JSON.stringify({
+            email,
+            password
+        }),
+        headers: { 'Content-Type': 'application/json' }
+    })
+
+        console.log('JHGFDSA')
+        
+        console.log('JHGFDSA')
+
+        return { success: "Success" }
+    } catch (error) {
+        if (error instanceof AuthError) {
+            console.log(error)
+            switch (error.type) {
+                case "CredentialsSignin":
+                    return {
+                        error: "Invalid credentials"
+                    }
+                case "AccessDenied": {
+                    return {
+                        error: "Please change your password"
+                    }
+                }
+                default:
+                    return {
+                        error: "Something went wrong"
+                    }
+
+            }
+        }
+        throw error;
+    }
+}
+
 export const login = async (values: z.infer<typeof LoginSchema>) => {
     const validatedFields = LoginSchema.safeParse(values);
 
@@ -38,10 +99,16 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
         if (error instanceof AuthError) {
             console.log(error)
             switch (error.type) {
+
                 case "CredentialsSignin":
                     return {
                         error: "Invalid credentials"
                     }
+                case "CallbackRouteError": {
+                    return {
+                        error: "Invalid credentials or Otp expired"
+                    }
+                }
                 case "AccessDenied": {
                     return {
                         error: "Please change your password"

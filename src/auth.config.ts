@@ -10,8 +10,8 @@ export default {
 
                 if (validatedFields.success) {
                     const { email, password } = validatedFields.data;
-                    const payload = { email, password }
-                    const res = await fetch(`${process.env.BASE_URL}/api/v1/auth/authenticate`, {
+                    const payload = { email, otp: password }
+                    const res = await fetch(`${process.env.BASE_URL}/api/v1/auth/verifyOtp`, {
                         method: 'POST',
                         body: JSON.stringify(payload),
                         headers: { 'Content-Type': 'application/json' }

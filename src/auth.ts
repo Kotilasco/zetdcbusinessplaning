@@ -51,7 +51,7 @@ export const {
         } */
             // 1. If this is the initial sign-in, add user information to the token
             if (user) {
-             //   console.log("JWT callback - Initial sign-in");
+               console.log("JWT callback - Initial sign-in", user);
                 return {
                     ...token,
                     access_token: user.access_token,
@@ -131,7 +131,7 @@ async function refreshAccessToken(token) {
 
         const refreshedTokens = await response.json();
 
-       // console.log("Refreshed tokens:", refreshedTokens);
+       console.log("Refreshed tokens:", refreshedTokens);
 
         if (!response.ok) throw new Error("Failed to refresh token");
 

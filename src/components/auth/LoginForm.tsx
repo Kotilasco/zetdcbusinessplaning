@@ -18,14 +18,17 @@ import {
 } from "@/components/ui/form";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { login } from "@/app/actions/login";
+import { firstlogin } from "@/app/actions/login";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import OtpModal from "../otp/OTPModal";
 
 export function LoginForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
+  const [accountId, setAccountId] = useState<string | null>(null);
+
   const { update } = useSession();
   const router = useRouter();
   const form = useForm<z.infer<typeof LoginSchema>>({
@@ -40,14 +43,15 @@ export function LoginForm() {
     setError("");
     setSuccess("");
     startTransition(() => {
-      login(values).then((data) => {
+      firstlogin(values).then((data) => {
         setError(data?.error);
         setSuccess(data?.success);
 
         console.log("success");
         console.log(success);
         if (data?.success) {
-          window.location.href = "/"; // Navigate to a dashboard or another page
+          // window.location.href = "/"; // Navigate to a dashboard or another page
+          setAccountId(values.email);
         }
       });
     });
@@ -63,6 +67,7 @@ export function LoginForm() {
 
   return (
     <div className="flex h-screen items-center justify-center overflow-hidden bg-white">
+
       {/* GIF Section (Left) */}
       <div className="hidden h-full w-1/4 grid-cols-1 gap-4 p-6 md:grid">
         <video
@@ -147,6 +152,10 @@ export function LoginForm() {
           </Form>
         </CardWrapper>
       </div> */}
+
+        {accountId && (
+        <OtpModal email={form.getValues("email")} accountId={accountId} />
+      )}
 
       <div
         className="relative flex h-full w-2/4 items-center justify-center overflow-hidden rounded-md p-6"
@@ -234,6 +243,8 @@ export function LoginForm() {
           className="h-1/2 w-full object-contain"
         />
       </div>
+
+     
     </div>
   );
 }

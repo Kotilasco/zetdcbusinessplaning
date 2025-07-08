@@ -1,4 +1,9 @@
 /** @type {import("next").NextConfig} */
+
+if (process.env.NODE_ENV === "development") {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+}
+
 const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -6,6 +11,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  reactStrictMode: true,
   experimental: {
     serverComponentsExternalPackages: ["oracledb"],
   },
